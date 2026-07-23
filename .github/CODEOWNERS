@@ -1,0 +1,9 @@
+# The owner reviews everything. Assistants propose; the owner decides.
+* @dimbo1324
+
+# Governance surfaces. Changes here alter how every AI assistant behaves.
+/.ai/           @dimbo1324
+/.claude/       @dimbo1324
+/.codex/        @dimbo1324
+/CLAUDE.md      @dimbo1324
+/.githooks/     @dimbo1324

@@ -1,0 +1,17 @@
+/*
+ * Scene stylesheets.
+ *
+ * One line per registered scene. `_template/scene.css` is deliberately
+ * absent: the template is a starting point, not a running scene.
+ */
+
+@import url('./walker/scene.css');
+
+/* Shared frame every scene is mounted into. */
+
+.scene {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}

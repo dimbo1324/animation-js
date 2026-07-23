@@ -1,0 +1,57 @@
+/* Base layer: reset and the page frame that hosts the shell. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  overflow: hidden;
+  height: 100%;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  -webkit-font-smoothing: antialiased;
+  line-height: var(--line-height-base);
+  color: var(--page-fg);
+
+  background-color: var(--page-bg);
+}
+
+.app {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100vw;
+  height: 100vh;
+  padding: var(--space-6);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent, currentcolor);
+  outline-offset: 2px;
+}
+
+/* stylelint-disable declaration-no-important -- an accessibility override has to beat every component rule; that is the whole point of it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+/* stylelint-enable declaration-no-important */

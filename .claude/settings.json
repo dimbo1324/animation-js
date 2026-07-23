@@ -1,0 +1,46 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git fetch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(git switch:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run validate:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run ai:sync:*)",
+      "Bash(npm run ai:check:*)",
+      "Bash(npm install:*)",
+      "Bash(node scripts/:*)",
+      "Bash(python scripts/ai/sync_agents.py:*)"
+    ],
+    "deny": [
+      "Read(./docs/__arch__/**)",
+      "Edit(./docs/__arch__/**)",
+      "Write(./docs/__arch__/**)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push origin --delete:*)",
+      "Bash(git push origin :main:*)",
+      "Bash(git branch -D main:*)",
+      "Bash(git branch -d main:*)",
+      "Bash(git branch -M:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -f:*)",
+      "Bash(git rebase:*)",
+      "Bash(git filter-branch:*)",
+      "Bash(git commit --no-verify:*)",
+      "Bash(git push --no-verify:*)",
+      "Bash(git config --unset core.hooksPath:*)",
+      "Bash(git merge:*)",
+      "Bash(rm -rf:*)"
+    ]
+  }
+}

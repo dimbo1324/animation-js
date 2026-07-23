@@ -1,0 +1,370 @@
+/*
+ * Shell styles: the tile, its toolbar, and its resize handles.
+ *
+ * The shell owns the frame and nothing inside it. Scene styles live next
+ * to their scene, not here.
+ */
+
+.tile {
+  position: relative;
+
+  flex-shrink: 0;
+
+  width: 70%;
+  height: 70%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  color: var(--text);
+
+  background-color: var(--surface);
+  box-shadow: var(--shadow-tile);
+
+  transition:
+    background-color var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out);
+}
+
+.tile--resizing {
+  user-select: none;
+}
+
+/* Stage: the mount point handed to the scene host. */
+
+.tile__stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+/* Empty state, shown only while no scene is mounted. */
+
+.tile__empty {
+  pointer-events: none;
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  display: none;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: center;
+
+  color: var(--text-muted);
+}
+
+.tile__stage:empty ~ .tile__empty {
+  display: flex;
+}
+
+.tile__empty-icon {
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  opacity: 0.4;
+}
+
+.tile__empty-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.tile__empty-text {
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.01em;
+}
+
+/* Toolbar */
+
+.tile__toolbar {
+  position: absolute;
+  z-index: 4;
+  top: var(--space-3);
+  right: var(--space-3);
+
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.tile__icon-button {
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+
+  color: var(--text);
+
+  background-color: var(--surface-muted);
+
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.tile__icon-button:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+
+.tile__icon-button svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/* Size dropdown */
+
+.tile__dropdown {
+  position: relative;
+}
+
+.tile__dropdown-trigger {
+  cursor: pointer;
+
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+
+  height: 2rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--text);
+
+  background-color: var(--surface-muted);
+
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.tile__dropdown-trigger:hover,
+.tile__dropdown--open .tile__dropdown-trigger {
+  border-color: var(--accent);
+}
+
+.tile__dropdown-label {
+  white-space: nowrap;
+}
+
+.tile__dropdown-arrow {
+  display: flex;
+
+  width: 0.875rem;
+  height: 0.875rem;
+
+  color: var(--text-muted);
+
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.tile__dropdown-arrow svg {
+  width: 100%;
+  height: 100%;
+}
+
+.tile__dropdown--open .tile__dropdown-arrow {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+.tile__dropdown-menu {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + var(--space-1));
+  right: 0;
+
+  width: 10.5rem;
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+
+  list-style: none;
+
+  background-color: var(--surface);
+  box-shadow: var(--shadow-tile);
+
+  animation: tile-dropdown-in var(--duration-fast) var(--ease-out);
+}
+
+@keyframes tile-dropdown-in {
+  from {
+    transform: translateY(-0.25rem);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.tile__dropdown-option {
+  cursor: pointer;
+
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+
+  height: 2.125rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+
+  font-size: var(--font-size-sm);
+  color: var(--text);
+
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.tile__dropdown-option:hover {
+  background-color: var(--surface-muted);
+}
+
+.tile__dropdown-option-icon {
+  display: flex;
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.75;
+}
+
+.tile__dropdown-option-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.tile__dropdown-option--disabled {
+  cursor: not-allowed;
+  color: var(--text-muted);
+}
+
+.tile__dropdown-option--disabled:hover {
+  background-color: transparent;
+}
+
+.tile__dropdown-option--disabled .tile__dropdown-option-icon {
+  opacity: 0.35;
+}
+
+/* Resize handles */
+
+.tile__handle {
+  position: absolute;
+  z-index: 6;
+}
+
+.tile__handle::after {
+  pointer-events: none;
+  content: '';
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  border-radius: var(--radius-full);
+
+  opacity: 0;
+  background-color: var(--accent);
+  box-shadow: 0 0 0 0 var(--accent-soft);
+
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.tile__handle:hover::after,
+.tile__handle--active::after {
+  opacity: 1;
+  box-shadow: 0 0 0 0.3125rem var(--accent-soft);
+}
+
+.tile__handle[data-axis='horizontal']::after,
+.tile__handle[data-axis='vertical']::after {
+  border-radius: var(--radius-sm);
+}
+
+.tile__handle[data-axis='vertical']::after {
+  width: 1.75rem;
+  height: 0.1875rem;
+}
+
+.tile__handle[data-axis='horizontal']::after {
+  width: 0.1875rem;
+  height: 1.75rem;
+}
+
+.tile__handle[data-axis='corner']::after {
+  width: 0.4375rem;
+  height: 0.4375rem;
+}
+
+.tile__handle--top,
+.tile__handle--bottom {
+  right: 1.375rem;
+  left: 1.375rem;
+  height: var(--handle-thickness);
+}
+
+.tile__handle--top {
+  top: var(--handle-inset);
+}
+
+.tile__handle--bottom {
+  bottom: var(--handle-inset);
+}
+
+.tile__handle--left,
+.tile__handle--right {
+  top: 1.375rem;
+  bottom: 1.375rem;
+  width: var(--handle-thickness);
+}
+
+.tile__handle--left {
+  left: var(--handle-inset);
+}
+
+.tile__handle--right {
+  right: var(--handle-inset);
+}
+
+.tile__handle--top-left,
+.tile__handle--top-right,
+.tile__handle--bottom-left,
+.tile__handle--bottom-right {
+  z-index: 7;
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
+.tile__handle--top-left {
+  top: var(--handle-inset);
+  left: var(--handle-inset);
+}
+
+.tile__handle--top-right {
+  top: var(--handle-inset);
+  right: var(--handle-inset);
+}
+
+.tile__handle--bottom-left {
+  bottom: var(--handle-inset);
+  left: var(--handle-inset);
+}
+
+.tile__handle--bottom-right {
+  right: var(--handle-inset);
+  bottom: var(--handle-inset);
+}

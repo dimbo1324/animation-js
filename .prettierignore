@@ -1,15 +1,28 @@
+# Dependencies and build output
 node_modules/
 dist/
 build/
 coverage/
-.next/
-.nuxt/
 .cache/
-*.log
 .git/
-.DS_Store
-.env
-.env.local
+
+# Lock files
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+# Generated assistant entry points.
+# Source of truth is .ai/; formatting these would fight `npm run ai:check`.
+AGENTS.md
+GEMINI.md
+.github/copilot-instructions.md
+.cursor/
+
+# Owner-private
+docs/__arch__/
+
+# Misc
+*.log
+.env
+.env.*
+.DS_Store

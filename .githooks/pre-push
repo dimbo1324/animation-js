@@ -1,0 +1,55 @@
+#!/bin/sh
+#
+# Guard the remote `main` branch and run the quality gate before publishing.
+#
+# stdin lines: <local ref> <local sha> <remote ref> <remote sha>
+
+PROTECTED_REF="refs/heads/main"
+
+is_zero_sha() {
+  case "$1" in
+    *[!0]*) return 1 ;;
+    *) return 0 ;;
+  esac
+}
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$remote_ref" = "$PROTECTED_REF" ] || continue
+
+  if is_zero_sha "$local_sha"; then
+    echo "" >&2
+    echo "  BLOCKED: refusing to delete origin/main." >&2
+    echo "" >&2
+    exit 1
+  fi
+
+  if is_zero_sha "$remote_sha"; then
+    continue
+  fi
+
+  if ! git merge-base --is-ancestor "$remote_sha" "$local_sha"; then
+    echo "" >&2
+    echo "  BLOCKED: this push would rewrite origin/main." >&2
+    echo "  Fast-forward pushes only. Rebase onto origin/main instead." >&2
+    echo "  (local ref: $local_ref)" >&2
+    echo "" >&2
+    exit 1
+  fi
+done
+
+if [ ! -d node_modules ]; then
+  echo "pre-push: node_modules missing, skipping the quality gate." >&2
+  echo "pre-push: run \`npm install\` to enable it." >&2
+  exit 0
+fi
+
+echo "pre-push: running the quality gate..."
+
+if ! npm run --silent validate; then
+  echo "" >&2
+  echo "  BLOCKED: \`npm run validate\` failed. Fix it before pushing." >&2
+  echo "" >&2
+  exit 1
+fi
+
+exit 0

@@ -1,13 +1,36 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <meta
+      name="color-scheme"
+      content="light dark"
+    />
     <title>Animation JS</title>
-    <link rel="stylesheet" href="../src/styles/main.css" />
+
+    <!--
+      Exactly one stylesheet and exactly one module. Everything else is
+      reached from inside them. Adding a third asset reference here is a
+      rule violation, not a shortcut.
+    -->
+    <link
+      rel="stylesheet"
+      href="../src/styles/main.css"
+    />
   </head>
   <body>
-    <main id="app"></main>
-    <script type="module" src="../src/scripts/main.js"></script>
+    <!-- id is for scripting, class is for styling. -->
+    <main
+      id="app"
+      class="app"
+    ></main>
+    <script
+      type="module"
+      src="../src/main.js"
+    ></script>
   </body>
 </html>

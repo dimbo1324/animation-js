@@ -1,34 +1,35 @@
 # Dependencies
 node_modules/
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
 bun.lockb
 
+# package-lock.json IS tracked on purpose: CI runs `npm ci`, which needs it,
+# and a reproducible tooling install is worth the diff noise.
+
 # Build outputs
 dist/
 build/
-.cache/
 out/
+.cache/
+_site/
 
-# IDE and Editor
-.vscode/
+# IDE and editor
+# .vscode/ is tracked on purpose: shared formatter and linter settings.
 .idea/
 *.swp
 *.swo
 *~
-.DS_Store
-Thumbs.db
+.vim/
 *.sublime-project
 *.sublime-workspace
-.vim/
+.editorconfig.local
 
 # Runtime and logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
 .pnpm-debug.log*
 
 # Environment
@@ -42,20 +43,19 @@ lerna-debug.log*
 ._*
 .Spotlight-V100
 .Trashes
+Thumbs.db
 ehthumbs.db
 
 # Testing
 coverage/
 .nyc_output/
 
+# Python bytecode from scripts/ai/
+__pycache__/
+*.py[cod]
+
 # Temporary files
 *.tmp
 *.temp
 tmp/
 temp/
-
-# Project specific
-.turbo/
-
-# IDE settings
-.editorconfig.local

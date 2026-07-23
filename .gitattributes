@@ -1,0 +1,37 @@
+# Normalise line endings: LF in the repository, native in the working tree
+# where it matters. Shell hooks must stay LF or git will not run them.
+* text=auto eol=lf
+
+*.js    text eol=lf
+*.mjs   text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.py    text eol=lf
+*.svg   text eol=lf
+.githooks/* text eol=lf
+
+# Binary assets
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.avif  binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.mp4   binary
+*.webm  binary
+
+# Generated: keep them out of diffs and language statistics.
+AGENTS.md                       linguist-generated=true
+GEMINI.md                       linguist-generated=true
+.github/copilot-instructions.md linguist-generated=true
+.cursor/rules/*.mdc             linguist-generated=true
+package-lock.json               linguist-generated=true

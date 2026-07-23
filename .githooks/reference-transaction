@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# Refuse to delete the `main` branch.
+#
+# This hook runs for every reference update in the repository, which makes
+# it the only place that can stop `git branch -D main`, `git branch -m main
+# ...`, and every other route to losing the branch. Rejecting during the
+# "prepared" stage aborts the whole transaction.
+#
+# Keep it fast: it runs on every commit, fetch, and checkout.
+
+[ "$1" = "prepared" ] || exit 0
+
+PROTECTED_REF="refs/heads/main"
+
+while read -r _old new ref; do
+  [ "$ref" = "$PROTECTED_REF" ] || continue
+
+  # A deletion is signalled by an all-zero target object id (40 hex zeros
+  # for sha1, 64 for sha256).
+  case "$new" in
+    *[!0]*) continue ;;
+  esac
+
+  cat >&2 <<'MESSAGE'
+
+  BLOCKED: refusing to delete the `main` branch.
+
+  `main` is protected in this repository (.githooks/reference-transaction).
+  If you genuinely need to remove or rename it, do it deliberately:
+
+      git config --unset core.hooksPath
+
+  ...and set it back with `npm run hooks:install` afterwards.
+
+MESSAGE
+
+  exit 1
+done
+
+exit 0

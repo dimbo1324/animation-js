@@ -1,0 +1,30 @@
+#!/bin/sh
+#
+# Format and lint staged files, then keep the generated assistant entry
+# points in sync with the `.ai/` modules.
+
+if [ -d node_modules ]; then
+  npx --no-install lint-staged || exit 1
+else
+  echo "pre-commit: node_modules missing, skipping lint-staged." >&2
+  echo "pre-commit: run \`npm install\` to enable it." >&2
+fi
+
+# `.ai/` is the single source of truth for every assistant. Regenerate the
+# mirrors after formatting so a reformatted module can never leave
+# AGENTS.md and friends stale.
+if node scripts/ai/sync.mjs >/dev/null 2>&1; then
+  git add \
+    AGENTS.md \
+    GEMINI.md \
+    .github/copilot-instructions.md \
+    .cursor/rules/animation-js.mdc 2>/dev/null
+else
+  echo "" >&2
+  echo "  pre-commit: could not regenerate the assistant entry points." >&2
+  echo "  Run \`npm run ai:sync\` manually and check the output." >&2
+  echo "" >&2
+  exit 1
+fi
+
+exit 0

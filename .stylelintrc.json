@@ -1,14 +1,31 @@
 {
-  "extends": ["stylelint-config-standard", "stylelint-config-prettier"],
+  "extends": ["stylelint-config-standard", "stylelint-config-clean-order"],
   "rules": {
-    "no-descending-specificity": null,
-    "selector-class-pattern": null,
     "color-hex-length": "long",
+    "color-named": "never",
+    "length-zero-no-unit": true,
+    "shorthand-property-no-redundant-values": true,
+    "declaration-block-no-redundant-longhand-properties": true,
+    "declaration-no-important": true,
+    "no-unknown-animations": true,
+    "selector-max-id": 0,
+    "selector-max-specificity": "0,4,1",
+    "selector-max-universal": 1,
+    "max-nesting-depth": 2,
+    "selector-class-pattern": [
+      "^[a-z][a-z0-9]*(-[a-z0-9]+)*(__[a-z0-9]+(-[a-z0-9]+)*)?(--[a-z0-9]+(-[a-z0-9]+)*)?$",
+      {
+        "message": "Expected class selector to be BEM-style kebab-case (block__element--modifier)"
+      }
+    ],
+    "custom-property-pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+    "keyframes-name-pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+    "declaration-property-value-disallowed-list": {
+      "transition": ["/all/"]
+    },
+    "comment-empty-line-before": null,
     "declaration-empty-line-before": null,
-    "rule-empty-line-before": [
-      "always",
-      { "except": ["first-nested"] }
-    ]
+    "rule-empty-line-before": ["always", { "except": ["first-nested"] }]
   },
-  "ignoreFiles": ["dist/**", "node_modules/**"]
+  "ignoreFiles": ["dist/**", "node_modules/**", "docs/__arch__/**"]
 }

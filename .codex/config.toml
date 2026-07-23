@@ -1,0 +1,17 @@
+# Project-scoped Codex defaults for animation-js.
+# Personal credentials, plugin auth, and machine-specific absolute paths
+# belong in ~/.codex/config.toml, not in this repository.
+
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+service_tier = "default"
+
+# AGENTS.md is the full shared ruleset and exceeds the 32 KiB default.
+# Mirror this into ~/.codex/config.toml if project config is not picked up,
+# otherwise the last modules are silently truncated.
+project_doc_max_bytes = 65536
+
+[agents]
+max_threads = 4
+max_depth = 1
+job_max_runtime_seconds = 1800

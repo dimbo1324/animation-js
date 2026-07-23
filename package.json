@@ -1,48 +1,58 @@
 {
   "name": "animation-js",
   "version": "0.1.0",
-  "description": "Modular vanilla JavaScript animation library",
+  "private": true,
+  "description": "Zero-dependency animation playground in vanilla JavaScript, CSS, and HTML",
   "type": "module",
-  "main": "dist/index.js",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
+    "dev": "node scripts/dev-server.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint src tests",
-    "lint:fix": "eslint src tests --fix",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix",
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:css:fix": "stylelint \"src/**/*.css\" --fix",
-    "validate": "npm run format:check && npm run lint && npm run lint:css",
-    "prepare": "husky install"
-  },
-  "devDependencies": {
-    "prettier": "^3.0.0",
-    "husky": "^8.0.0",
-    "lint-staged": "^15.0.0",
-    "eslint": "^9.0.0",
-    "@eslint/js": "^9.0.0",
-    "eslint-config-prettier": "^9.0.0",
-    "stylelint": "^16.0.0",
-    "stylelint-config-standard": "^36.0.0",
-    "stylelint-config-prettier": "^9.0.5"
+    "ai:sync": "node scripts/ai/sync.mjs",
+    "ai:check": "node scripts/ai/sync.mjs --check",
+    "fix": "npm run lint:fix && npm run lint:css:fix && npm run format",
+    "validate": "npm run format:check && npm run lint && npm run lint:css && npm run ai:check",
+    "hooks:install": "node scripts/setup/install-git-hooks.mjs",
+    "prepare": "node scripts/setup/install-git-hooks.mjs"
   },
   "lint-staged": {
-    "*.{js}": [
-      "eslint --fix",
+    "*.{js,mjs}": [
+      "eslint --fix --max-warnings=0",
       "prettier --write"
     ],
     "*.css": [
       "stylelint --fix",
       "prettier --write"
     ],
-    "*.{html,json,md}": [
+    "*.{html,json,md,yml,yaml}": [
       "prettier --write"
     ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "eslint": "^9.20.0",
+    "eslint-config-prettier": "^10.0.0",
+    "globals": "^16.0.0",
+    "lint-staged": "^15.4.0",
+    "prettier": "^3.6.0",
+    "stylelint": "^16.14.0",
+    "stylelint-config-clean-order": "^7.0.0",
+    "stylelint-config-standard": "^36.0.0",
+    "stylelint-order": "^7.0.0"
   },
   "keywords": [
     "animation",
     "javascript",
-    "vanilla"
+    "vanilla",
+    "canvas",
+    "dom"
   ],
-  "author": "",
   "license": "MIT"
 }

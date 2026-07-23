@@ -1,0 +1,44 @@
+name: New scene
+description: An animation, character, or cartoon to build
+labels: ['scene']
+
+body:
+  - type: input
+    id: scene-id
+    attributes:
+      label: Scene id
+      description: kebab-case, reads as a name
+      placeholder: walking-cat
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What happens on screen
+      description: Describe the motion, not the implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links, sketches, or timings that define the feel.
+
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Expected rendering tier
+      options:
+        - CSS only
+        - DOM + rAF (default)
+        - Canvas 2D
+        - WebGL
+      default: 1
+
+  - type: input
+    id: entities
+    attributes:
+      label: Rough entity count
+      placeholder: '1 character, 20 particles'

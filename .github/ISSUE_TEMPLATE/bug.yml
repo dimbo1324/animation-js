@@ -1,0 +1,53 @@
+name: Bug
+description: Something is broken, janky, or wrong on screen
+labels: ['bug']
+
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. npm run dev
+        2. ...
+    validations:
+      required: true
+
+  - type: input
+    id: scene
+    attributes:
+      label: Scene
+      placeholder: walker
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - Visual glitch
+        - Dropped frames / jank
+        - Console error
+        - Interaction or accessibility
+        - Tooling
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and OS
+      placeholder: Chrome 140 / Windows 11
