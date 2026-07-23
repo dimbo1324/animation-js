@@ -2,7 +2,7 @@
  * Application initialization and core logic
  */
 
-import { createStage } from '../components/Stage.js';
+import { createTile } from '../components/Tile.js';
 
 /**
  * Initialize the application
@@ -15,8 +15,8 @@ export function initializeApp() {
     return;
   }
 
-  const stage = createStage();
-  app.appendChild(stage);
+  const tile = createTile();
+  app.appendChild(tile);
 
   console.log('Application initialized');
 }

@@ -1,0 +1,112 @@
+/* Tile — simple resizable, themeable card kept centered in the body */
+
+.tile {
+  position: relative;
+  width: 70%;
+  height: 70%;
+  min-width: 50%;
+  min-height: 50%;
+  max-width: 95%;
+  max-height: 95%;
+  border-radius: 16px;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.tile[data-theme='light'] {
+  --tile-bg: #ffffff;
+  --tile-border: #e2e8f0;
+  --tile-fg: #334155;
+  --tile-handle-bg: #f8fafc;
+
+  border: 1px solid var(--tile-border);
+  background-color: var(--tile-bg);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.tile[data-theme='dark'] {
+  --tile-bg: #111827;
+  --tile-border: #1f2937;
+  --tile-fg: #e2e8f0;
+  --tile-handle-bg: #1a2333;
+
+  border: 1px solid var(--tile-border);
+  background-color: var(--tile-bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.tile--resizing {
+  user-select: none;
+}
+
+/* Theme toggle */
+
+.tile__theme-toggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  cursor: pointer;
+  color: var(--tile-fg);
+  border: 1px solid var(--tile-border);
+  border-radius: 8px;
+  background-color: var(--tile-handle-bg);
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.tile__theme-toggle:hover {
+  transform: scale(1.05);
+}
+
+.tile__theme-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Resize handles */
+
+.tile__handle {
+  position: absolute;
+  z-index: 1;
+}
+
+.tile__handle--right {
+  top: 8px;
+  right: -5px;
+  bottom: 8px;
+  width: 10px;
+}
+
+.tile__handle--bottom {
+  right: 8px;
+  bottom: -5px;
+  left: 8px;
+  height: 10px;
+}
+
+.tile__handle--corner {
+  right: -7px;
+  bottom: -7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: var(--tile-fg);
+  border: 1px solid var(--tile-border);
+  border-radius: 6px;
+  background-color: var(--tile-handle-bg);
+}
+
+.tile__handle--corner svg {
+  width: 14px;
+  height: 14px;
+}
