@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Пятеро мешковатых</title>
+<style>
+/* ==========================================================================
+   Интерфейс монохромный. Цвет — только у существ.
+   ========================================================================== */
+:root{
+  --paper:#eceae5;
+  --card:#ffffff;
+  --well:#f5f4f0;
+  --ink:#111110;
+  --ink-2:#45443f;
+  --muted:#9c9b93;
+  --line:#e5e4de;
+  --line-2:#cfcec6;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; padding:clamp(20px,5vw,64px) clamp(16px,5vw,48px) 72px;
+  background:var(--paper);
+  background-image:radial-gradient(var(--line-2) 1px,transparent 1px);
+  background-size:26px 26px;
+  color:var(--ink);
+  font:400 15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+.wrap{ max-width:1180px; margin:0 auto }
+
+/* ------------------------------------------------------------- шапка ---- */
+header{
+  display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between;
+  gap:28px; padding-bottom:26px; margin-bottom:30px;
+  border-bottom:1px solid var(--line-2);
+}
+.eyebrow{
+  margin:0 0 12px; font-family:var(--mono); font-size:10.5px; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--muted);
+}
+h1{ margin:0 0 12px; font-size:clamp(30px,5vw,46px); line-height:.98;
+    letter-spacing:-.045em; font-weight:800 }
+.lede{ margin:0; max-width:46ch; font-size:13.5px; color:var(--ink-2) }
+.lede code{ font-family:var(--mono); font-size:12px; background:#e2e1da;
+            padding:1px 5px; border-radius:5px }
+
+.controls{ display:flex; flex-wrap:wrap; gap:8px }
+.btn{
+  font:600 10.5px/1 inherit; font-family:var(--mono); letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-2); background:transparent; border:1px solid var(--line-2);
+  border-radius:999px; padding:11px 15px; cursor:pointer;
+  transition:color .18s,border-color .18s,background .18s;
+}
+.btn:hover{ color:var(--ink); border-color:var(--ink) }
+.btn[aria-pressed=true]{ background:var(--ink); border-color:var(--ink); color:#fff }
+
+/* ------------------------------------------------------------ сетка ---- */
+.grid{
+  display:grid; gap:20px;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+}
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:20px;
+  padding:16px 16px 18px; display:flex; flex-direction:column; gap:14px;
+  box-shadow:0 1px 0 rgba(0,0,0,.02),0 22px 40px -34px rgba(0,0,0,.5);
+  transition:transform .3s cubic-bezier(.2,.9,.25,1),box-shadow .3s,border-color .2s;
+  cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent;
+}
+.card:hover{ transform:translateY(-3px); border-color:var(--line-2);
+             box-shadow:0 1px 0 rgba(0,0,0,.02),0 30px 50px -34px rgba(0,0,0,.55) }
+.card:active{ transform:translateY(-1px) }
+
+.card-top{ display:flex; justify-content:space-between; align-items:baseline;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase }
+.idx{ color:var(--ink); font-weight:700 }
+.shape{ color:var(--muted) }
+
+.well{ position:relative; background:var(--well); border-radius:14px; overflow:hidden }
+.well::after{ content:""; position:absolute; inset:0; border-radius:14px;
+  box-shadow:inset 0 0 0 1px rgba(17,17,16,.05); pointer-events:none }
+.well svg{ display:block; width:100%; height:auto }
+
+.card-bot{ display:flex; justify-content:space-between; align-items:baseline; gap:10px }
+.name{ font-size:15px; font-weight:700; letter-spacing:-.02em }
+.mood{ font-family:var(--mono); font-size:10.5px; color:var(--muted);
+       letter-spacing:.04em; text-align:right }
+
+footer{ margin-top:34px; padding-top:18px; border-top:1px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:6px 22px; justify-content:space-between;
+  font-family:var(--mono); font-size:10.5px; color:var(--muted); letter-spacing:.05em }
+
+@media (max-width:560px){
+  header{ gap:20px }
+  .grid{ gap:14px }
+}
+:focus-visible{ outline:2px solid var(--ink); outline-offset:3px }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="eyebrow">Коллекция · 5 существ</p>
+      <h1>Пятеро мешковатых</h1>
+      <p class="lede">Тело — идеальный примитив, который слегка оседает под собственным весом.
+        Двигаются только глаза и рот. Вся анимация считается покадрово в
+        <code>requestAnimationFrame</code>: ни одного CSS-кейфрейма. Наведите курсор — посмотрят на вас.</p>
+    </div>
+    <div class="controls">
+      <button class="btn" data-mood="curious">Разбудить</button>
+      <button class="btn" data-mood="surprised">Удивить</button>
+      <button class="btn" data-mood="sleepy">Усыпить</button>
+      <button class="btn" id="wire" aria-pressed="false">Каркас</button>
+    </div>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    <span id="stat">—</span>
+    <span>svg · процедурная деформация · пружинная интерполяция</span>
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+/* ══════════════════════════════════════════════════════════════════════════
+   0. МАТЕМАТИКА
+   ══════════════════════════════════════════════════════════════════════════ */
+const TAU = Math.PI * 2;
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const lerp  = (a, b, t) => a + (b - a) * t;
+const rnd   = (a, b) => a + Math.random() * (b - a);
+const pick  = a => a[(Math.random() * a.length) | 0];
+
+/** Плавная ступенька 0→1 на отрезке [e0,e1]. */
+function smoothstep(e0, e1, x){
+  const t = clamp((x - e0) / (e1 - e0), 0, 1);
+  return t * t * (3 - 2 * t);
+}
+/** Мягкое «приземление»: значение асимптотически упирается в потолок k. */
+function softCap(u, k){ return k * (1 - Math.exp(-u / k)); }
+
+const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+const easeInOutQuad = t => t < .5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2;
+
+/* — векторы (простые массивы [x,y]) — */
+const vsub = (a, b) => [a[0]-b[0], a[1]-b[1]];
+const vadd = (a, b) => [a[0]+b[0], a[1]+b[1]];
+const vmul = (a, k) => [a[0]*k, a[1]*k];
+const vlen = a => Math.hypot(a[0], a[1]);
+const vnorm = a => { const l = vlen(a) || 1; return [a[0]/l, a[1]/l]; };
+
+/**
+ * Пружина второго порядка. Все переходы в сцене идут через неё,
+ * поэтому никакое значение не может измениться скачком.
+ */
+class Spring{
+  constructor(value, stiffness = 90, ratio = 1){
+    this.v = value; this.target = value; this.vel = 0;
+    this.k = stiffness;
+    this.d = 2 * Math.sqrt(stiffness) * ratio;   // ratio<1 — лёгкий перелёт
+  }
+  set(v){ this.v = this.target = v; this.vel = 0; }
+  step(dt){
+    // подшаги: устойчиво даже если вкладка «проспала» кадр
+    const n = Math.min(8, Math.ceil(dt / 0.008)) || 1;
+    const h = dt / n;
+    for (let i = 0; i < n; i++){
+      const a = this.k * (this.target - this.v) - this.d * this.vel;
+      this.vel += a * h;
+      this.v   += this.vel * h;
+    }
+    return this.v;
+  }
+}
+
+/** Гладкий детерминированный шум: сумма несоизмеримых синусов. */
+function makeNoise(seed){
+  const p = [];
+  for (let i = 0; i < 3; i++) p.push((seed * (i + 3) * 12.9898) % TAU);
+  return t => (
+    Math.sin(t * 1.000 + p[0]) * 0.55 +
+    Math.sin(t * 1.618 + p[1]) * 0.30 +
+    Math.sin(t * 2.718 + p[2]) * 0.15
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   1. ГЕОМЕТРИЯ: идеальные примитивы со скруглёнными углами
+   Многоугольник + радиус в каждой вершине → отрезки и дуги → равномерная
+   выборка точек по длине контура. Круг — это квадрат с радиусом в половину
+   стороны, капсула — прямоугольник с радиусом в половину ширины, и т.д.
+   ══════════════════════════════════════════════════════════════════════════ */
+function roundedOutline(points, radii){
+  const n = points.length, corners = [];
+
+  for (let i = 0; i < n; i++){
+    const p    = points[i];
+    const prev = points[(i - 1 + n) % n];
+    const next = points[(i + 1) % n];
+    const e1 = vsub(prev, p), e2 = vsub(next, p);
+    const v1 = vnorm(e1),     v2 = vnorm(e2);
+
+    const dot   = clamp(v1[0]*v2[0] + v1[1]*v2[1], -1, 1);
+    const angle = Math.acos(dot);                 // внутренний угол
+    const half  = angle / 2;
+
+    let r = radii[i], t = r / Math.tan(half);
+    t = Math.min(t, vlen(e1) / 2, vlen(e2) / 2);  // не длиннее половины ребра
+    r = t * Math.tan(half);
+
+    if (!(r > 0.0001) || !isFinite(r)){
+      corners.push({ p1: p, p2: p, arc: null });
+      continue;
+    }
+    const p1  = vadd(p, vmul(v1, t));
+    const p2  = vadd(p, vmul(v2, t));
+    const bis = vnorm(vadd(v1, v2));
+    const c   = vadd(p, vmul(bis, r / Math.sin(half)));
+
+    let a0 = Math.atan2(p1[1] - c[1], p1[0] - c[0]);
+    let a1 = Math.atan2(p2[1] - c[1], p2[0] - c[0]);
+    let da = a1 - a0;                              // всегда короткая дуга
+    while (da >  Math.PI) da -= TAU;
+    while (da < -Math.PI) da += TAU;
+
+    corners.push({ p1, p2, arc: { c, r, a0, da } });
+  }
+
+  // сборка: ребро → дуга → ребро → дуга …
+  const segs = [];
+  for (let i = 0; i < n; i++){
+    const from = corners[(i - 1 + n) % n].p2;
+    const to   = corners[i].p1;
+    const L = vlen(vsub(to, from));
+    if (L > 1e-6) segs.push({ type:"line", a: from, b: to, len: L });
+    const arc = corners[i].arc;
+    if (arc) segs.push({ type:"arc", ...arc, len: Math.abs(arc.da) * arc.r });
+  }
+  return segs;
+}
+
+/** Равномерная выборка N точек по длине контура. */
+function sampleOutline(segs, N){
+  const total = segs.reduce((s, x) => s + x.len, 0);
+  const out = [];
+  let si = 0, acc = 0;
+  for (let i = 0; i < N; i++){
+    const target = total * i / N;
+    while (si < segs.length - 1 && acc + segs[si].len < target){ acc += segs[si].len; si++; }
+    const s = segs[si];
+    const u = clamp((target - acc) / s.len, 0, 1);
+    if (s.type === "line") out.push([lerp(s.a[0], s.b[0], u), lerp(s.a[1], s.b[1], u)]);
+    else {
+      const a = s.a0 + s.da * u;
+      out.push([s.c[0] + Math.cos(a) * s.r, s.c[1] + Math.sin(a) * s.r]);
+    }
+  }
+  return out;
+}
+
+/** Замкнутая кривая Catmull–Rom, переведённая в кубические Безье. */
+function smoothClosedPath(P){
+  const n = P.length;
+  let d = `M${P[0][0].toFixed(1)} ${P[0][1].toFixed(1)}`;
+  for (let i = 0; i < n; i++){
+    const p0 = P[(i - 1 + n) % n], p1 = P[i], p2 = P[(i + 1) % n], p3 = P[(i + 2) % n];
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6, c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6, c2y = p2[1] - (p3[1] - p1[1]) / 6;
+    d += `C${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  return d + "Z";
+}
+
+const rectPts = (x, y, w, h) => [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
+
+/* ══════════════════════════════════════════════════════════════════════════
+   2. ВИДЫ СУЩЕСТВ
+   Всё в единичных координатах: примерно −1…1, ось Y вниз.
+   ══════════════════════════════════════════════════════════════════════════ */
+const SPECIES = [
+  {
+    id:"circle", shape:"круг", name:"Пузырь",
+    color:"#ff5f97", dark:"#e0417c",
+    poly: rectPts(-0.90, -0.90, 1.80, 1.80), radii:[0.90, 0.90, 0.90, 0.90],
+    eyes:[{ x:-0.34, y:-0.10, r:0.30 }, { x:0.34, y:-0.10, r:0.30 }],
+    mouth:{ x:0, y:0.44, w:0.52 },
+    trait:{ sag:1.00, breath:0.55, wobble:1.0, curiosity:0.85, drowsy:0.15, lookUp:0.00 }
+  },
+  {
+    id:"square", shape:"квадрат", name:"Кубик",
+    color:"#3f86ff", dark:"#255fcc",
+    poly: rectPts(-0.90, -0.86, 1.80, 1.74), radii:[0.30, 0.30, 0.22, 0.22],
+    eyes:[{ x:-0.38, y:-0.16, r:0.27 }, { x:0.38, y:-0.16, r:0.27 }],
+    mouth:{ x:0, y:0.40, w:0.62 },
+    trait:{ sag:1.35, breath:0.42, wobble:0.7, curiosity:0.45, drowsy:0.40, lookUp:0.04 }
+  },
+  {
+    id:"capsule", shape:"капсула", name:"Батон",
+    color:"#2ecb7d", dark:"#17a25c",
+    poly: rectPts(-0.56, -0.98, 1.12, 1.96), radii:[0.56, 0.56, 0.56, 0.56],
+    eyes:[{ x:0, y:-0.32, r:0.40 }],
+    mouth:{ x:0, y:0.36, w:0.34 },
+    trait:{ sag:0.75, breath:0.72, wobble:1.3, curiosity:1.00, drowsy:0.10, lookUp:-0.05 }
+  },
+  {
+    id:"triangle", shape:"треугольник", name:"Клин",
+    color:"#ffb62e", dark:"#dc9310",
+    poly:[[0, -1.02], [1.04, 0.80], [-1.04, 0.80]], radii:[0.20, 0.20, 0.20],
+    eyes:[{ x:-0.30, y:0.02, r:0.24 }, { x:0.30, y:0.02, r:0.24 }],
+    mouth:{ x:0, y:0.42, w:0.44 },
+    trait:{ sag:0.90, breath:0.50, wobble:0.9, curiosity:0.60, drowsy:0.25, lookUp:0.08 }
+  },
+  {
+    id:"dome", shape:"купол", name:"Холмик",
+    color:"#a95cff", dark:"#7b40d4",
+    poly: rectPts(-0.88, -0.86, 1.76, 1.80), radii:[0.88, 0.88, 0.22, 0.22],
+    eyes:[{ x:-0.44, y:-0.02, r:0.21 }, { x:0, y:-0.24, r:0.24 }, { x:0.44, y:-0.02, r:0.21 }],
+    mouth:{ x:0, y:0.46, w:0.56 },
+    trait:{ sag:1.60, breath:0.38, wobble:1.5, curiosity:0.70, drowsy:0.55, lookUp:-0.02 }
+  }
+];
+
+/* ══════════════════════════════════════════════════════════════════════════
+   3. НАСТРОЕНИЯ
+   Каждое настроение — просто набор целей для пружин.
+   ══════════════════════════════════════════════════════════════════════════ */
+const MOODS = {
+  calm:       { label:"спокоен",      lid:0.08, lowLid:0.00, pupil:1.00, curve: 0.16, open:0.02, mouthW:1.00, blink:[2.6, 6.5], look:[2.2, 5.0], gaze:0.55 },
+  curious:    { label:"любопытен",    lid:0.00, lowLid:0.00, pupil:1.18, curve: 0.08, open:0.10, mouthW:0.86, blink:[3.0, 7.0], look:[0.8, 2.2], gaze:1.00 },
+  happy:      { label:"доволен",      lid:0.04, lowLid:0.30, pupil:1.05, curve: 0.46, open:0.22, mouthW:1.12, blink:[2.2, 5.0], look:[1.4, 3.4], gaze:0.80 },
+  sleepy:     { label:"клюёт носом",  lid:0.62, lowLid:0.10, pupil:0.88, curve: 0.04, open:0.02, mouthW:0.80, blink:[1.1, 3.0], look:[3.5, 8.0], gaze:0.25 },
+  surprised:  { label:"удивлён",      lid:-0.10, lowLid:0.00, pupil:1.42, curve:-0.04, open:0.62, mouthW:0.60, blink:[4.0, 9.0], look:[0.5, 1.4], gaze:1.00 },
+  suspicious: { label:"подозревает",  lid:0.40, lowLid:0.18, pupil:0.74, curve:-0.20, open:0.00, mouthW:0.92, blink:[3.0, 7.0], look:[1.0, 2.6], gaze:0.90 },
+  bored:      { label:"скучает",      lid:0.28, lowLid:0.04, pupil:0.94, curve:-0.08, open:0.03, mouthW:0.94, blink:[2.0, 5.0], look:[2.5, 6.0], gaze:0.35 }
+};
+const MOOD_POOL = ["calm", "calm", "curious", "happy", "bored", "suspicious", "sleepy"];
+
+/* ══════════════════════════════════════════════════════════════════════════
+   4. СУЩЕСТВО
+   ══════════════════════════════════════════════════════════════════════════ */
+const VB = 240;              // сторона viewBox
+const UNIT = 96;             // единица → пиксели viewBox
+const SAMPLES = 56;          // точек на контуре
+
+const SVGNS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs) => {
+  const n = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  return n;
+};
+
+let uid = 0;
+
+class Creature{
+  constructor(def, index){
+    this.def = def;
+    this.i = index;
+    this.uid = ++uid;
+    this.t = rnd(0, 100);
+    this.noise = makeNoise(index * 7.3 + 1);
+    this.noiseB = makeNoise(index * 3.1 + 11);
+
+    /* базовый контур в единичных координатах */
+    this.base = sampleOutline(roundedOutline(def.poly, def.radii), SAMPLES);
+    this.pts  = this.base.map(p => p.slice());
+
+    /* ——— пружины ——— */
+    this.sp = {
+      lid:     new Spring(0.08, 70, 1.0),
+      lowLid:  new Spring(0.00, 70, 1.0),
+      pupil:   new Spring(1.00, 80, 0.9),
+      curve:   new Spring(0.16, 55, 0.85),
+      open:    new Spring(0.02, 60, 0.85),
+      mouthW:  new Spring(1.00, 55, 1.0),
+      mouthDX: new Spring(0.00, 40, 0.9),
+      squash:  new Spring(0.00, 45, 0.55),   // «желейная» реакция на клик
+      sag:     new Spring(1.00, 30, 1.0)
+    };
+    /* по паре пружин на каждый глаз — зрачки живут почти независимо */
+    this.eyes = def.eyes.map((e, k) => ({
+      def: e,
+      px: new Spring(0, 55 + k * 9, 0.78),
+      py: new Spring(0, 55 + k * 9, 0.78),
+      lag: 1 - k * 0.12
+    }));
+
+    this.mood = "calm";
+    this.moodT = rnd(1.5, 4);
+    this.blinkT = rnd(1, 4);
+    this.blink = 0;          // 0…1, проигрывается вручную
+    this.blinking = false;
+    this.lookT = rnd(0.5, 2.5);
+    this.gaze = [rnd(-0.5, 0.5), rnd(-0.3, 0.3)];   // куда смотрит, в единицах
+    this.routine = null;
+    this.hover = false;
+    this.visible = true;
+
+    this.buildDOM();
+    this.applyMood("calm", true);
+  }
+
+  /* ------------------------------------------------------------------ DOM */
+  buildDOM(){
+    const d = this.def;
+    const svg = el("svg", { viewBox:`${-VB/2} ${-VB/2} ${VB} ${VB}`, width:"100%", role:"img",
+                            "aria-label":`${d.name} — ${d.shape}` });
+    const defs = el("defs");
+    svg.appendChild(defs);
+
+    /* тень-опора */
+    this.shadow = el("ellipse", { cx:0, cy:0, rx:60, ry:9, fill:"#111110", opacity:".07" });
+    svg.appendChild(this.shadow);
+
+    /* тело */
+    this.body = el("path", { fill:d.color });
+    svg.appendChild(this.body);
+
+    /* лицо целиком дышит вместе с телом */
+    this.face = el("g", {});
+    svg.appendChild(this.face);
+
+    this.eyeNodes = this.eyes.map((e, k) => {
+      const g = el("g", {});
+      const cx = e.def.x * UNIT, cy = e.def.y * UNIT, r = e.def.r * UNIT;
+
+      const clip = el("clipPath", { id:`clip-${this.uid}-${k}` });
+      clip.appendChild(el("circle", { cx, cy, r }));
+      defs.appendChild(clip);
+
+      g.appendChild(el("circle", { cx, cy, r, fill:"#ffffff" }));
+
+      const pupil = el("circle", { cx, cy, r: r * 0.44, fill:"#141413" });
+      g.appendChild(pupil);
+      const glint = el("circle", { cx, cy, r: r * 0.13, fill:"#ffffff" });
+      g.appendChild(glint);
+
+      /* веки — прямоугольники, обрезанные окружностью глаза */
+      const lidG = el("g", { "clip-path":`url(#clip-${this.uid}-${k})` });
+      const top = el("rect", { x: cx - r - 2, y: cy - r - 2, width: r * 2 + 4, height: 0, fill: d.color });
+      const bot = el("rect", { x: cx - r - 2, y: cy + r, width: r * 2 + 4, height: 0, fill: d.color });
+      lidG.appendChild(top); lidG.appendChild(bot);
+      g.appendChild(lidG);
+
+      this.face.appendChild(g);
+      return { g, pupil, glint, top, bot, cx, cy, r };
+    });
+
+    this.mouth = el("path", {
+      fill:"#141413", stroke:"#141413", "stroke-width":7,
+      "stroke-linejoin":"round", "stroke-linecap":"round"
+    });
+    this.face.appendChild(this.mouth);
+
+    /* каркас (по кнопке) */
+    this.wire = el("g", { fill:"none", stroke:"#141413", "stroke-width":1, opacity:".45", display:"none" });
+    this.wireDots = [];
+    for (let i = 0; i < SAMPLES; i++){
+      const c = el("circle", { r:1.8, fill:"#141413", stroke:"none" });
+      this.wire.appendChild(c); this.wireDots.push(c);
+    }
+    this.wireBase = el("path", { "stroke-dasharray":"3 4" });
+    this.wire.appendChild(this.wireBase);
+    this.eyes.forEach(e => this.wire.appendChild(
+      el("circle", { cx:e.def.x*UNIT, cy:e.def.y*UNIT, r:e.def.r*UNIT, "stroke-dasharray":"3 4" })));
+    svg.appendChild(this.wire);
+    this.wireBase.setAttribute("d", smoothClosedPath(this.base.map(p => [p[0]*UNIT, p[1]*UNIT])));
+
+    this.svg = svg;
+  }
+
+  /* --------------------------------------------------------------- мозг */
+  applyMood(name, instant){
+    const M = MOODS[name];
+    if (!M) return;
+    this.mood = name;
+    const s = this.sp;
+    s.lid.target = M.lid; s.lowLid.target = M.lowLid; s.pupil.target = M.pupil;
+    s.curve.target = M.curve; s.open.target = M.open; s.mouthW.target = M.mouthW;
+    if (instant){
+      s.lid.set(M.lid); s.lowLid.set(M.lowLid); s.pupil.set(M.pupil);
+      s.curve.set(M.curve); s.open.set(M.open); s.mouthW.set(M.mouthW);
+    }
+    this.blinkT = Math.min(this.blinkT, rnd(...M.blink));
+    if (this.onMood) this.onMood(M.label);
+  }
+
+  nextMood(){
+    const tr = this.def.trait;
+    const bag = MOOD_POOL.slice();
+    if (Math.random() < tr.drowsy) bag.push("sleepy", "bored");
+    if (Math.random() < tr.curiosity) bag.push("curious", "happy");
+    let next = pick(bag);
+    if (next === this.mood) next = pick(bag);
+    this.applyMood(next);
+    this.moodT = rnd(4, 10) * (next === "sleepy" ? 1.4 : 1);
+  }
+
+  startBlink(){
+    this.blinking = true; this.blinkPhase = 0;
+    this.blinkDur = rnd(0.11, 0.16);   // закрыть
+    this.blinkOpen = rnd(0.13, 0.20);  // открыть
+    this.blinkHold = Math.random() < 0.12 ? rnd(0.15, 0.5) : 0.02;
+  }
+
+  /** Зевок: медленно открывающийся рот + закрытые глаза. Только у сонных. */
+  yawn(){
+    this.routine = { t:0, dur:2.2, kind:"yawn" };
+  }
+
+  react(kind){
+    if (kind === "poke"){
+      this.sp.squash.v = 0; this.sp.squash.vel = 7.5;    // импульс — тело качается
+      this.applyMood("surprised");
+      this.moodT = rnd(1.1, 1.9);
+      this.startBlink();
+    }
+  }
+
+  /* ------------------------------------------------------------- расчёт */
+  update(dt, look){
+    this.t += dt;
+    const tr = this.def.trait, s = this.sp;
+
+    /* — сценарии — */
+    if (this.routine){
+      const r = this.routine;
+      r.t += dt;
+      const u = clamp(r.t / r.dur, 0, 1);
+      if (r.kind === "yawn"){
+        const k = Math.sin(u * Math.PI);              // 0→1→0
+        s.open.target = 0.04 + easeInOutQuad(k) * 0.52;
+        s.mouthW.target = 0.8 + k * 0.28;
+        s.lid.target = 0.1 + k * 0.85;
+        s.curve.target = 0.05 - k * 0.12;
+      }
+      if (u >= 1){ this.routine = null; this.applyMood(this.mood); }
+    } else {
+      this.moodT -= dt;
+      if (this.moodT <= 0){
+        this.nextMood();
+        if (this.mood === "sleepy" && Math.random() < 0.5) this.yawn();
+      }
+    }
+
+    /* — моргание — */
+    if (!this.blinking){
+      this.blinkT -= dt;
+      if (this.blinkT <= 0){
+        this.startBlink();
+        this.blinkT = rnd(...MOODS[this.mood].blink);
+      }
+    } else {
+      this.blinkPhase += dt;
+      const a = this.blinkDur, b = a + this.blinkHold, c = b + this.blinkOpen;
+      if (this.blinkPhase < a)      this.blink = easeOutCubic(this.blinkPhase / a);
+      else if (this.blinkPhase < b) this.blink = 1;
+      else if (this.blinkPhase < c) this.blink = 1 - easeInOutQuad((this.blinkPhase - b) / this.blinkOpen);
+      else { this.blink = 0; this.blinking = false; }
+    }
+
+    /* — куда смотреть — */
+    const M = MOODS[this.mood];
+    this.lookT -= dt;
+    if (look){                                   // курсор рядом — держим его
+      this.gaze = look;
+      this.lookT = Math.max(this.lookT, 0.25);
+    } else if (this.lookT <= 0){
+      const wide = this.mood === "curious" ? 1.3 : 0.8;
+      if (Math.random() < 0.16){                 // косоглазие: смотрит себе на нос
+        this.gaze = [0, 0.05];
+        this.crossed = true;
+      } else {
+        this.crossed = false;
+        this.gaze = [rnd(-1, 1) * wide, rnd(-0.7, 0.9) * wide - tr.lookUp * 3];
+      }
+      this.lookT = rnd(...M.look);
+    }
+
+    /* — цели зрачков — */
+    this.eyes.forEach((e, k) => {
+      const ex = e.def.x, ey = e.def.y;
+      let dx, dy;
+      if (this.crossed){                          // оба зрачка сходятся к центру
+        dx = -ex * 1.4; dy = 0.25;
+      } else {
+        dx = this.gaze[0] - ex;
+        dy = this.gaze[1] - ey;
+      }
+      const L = Math.hypot(dx, dy) || 1;
+      const reach = clamp(L / 1.1, 0, 1) * M.gaze;
+      const maxOff = e.def.r * (0.46 - 0.10 * (s.pupil.v - 1));
+      e.px.target = (dx / L) * maxOff * reach * e.lag;
+      e.py.target = (dy / L) * maxOff * reach * e.lag;
+      e.px.step(dt); e.py.step(dt);
+    });
+
+    for (const k in s) s[k].step(dt);
+  }
+
+  /* ----------------------------------------------------------- отрисовка */
+  render(){
+    const d = this.def, tr = d.trait, s = this.sp, t = this.t;
+
+    /* дыхание: объём сохраняется — растянулся по вертикали, сузился по горизонтали */
+    const breath = Math.sin(t * tr.breath * 1.7) * 0.5 + 0.5;
+    const jelly  = s.squash.v;                       // затухающие колебания от клика
+    const sy = 1 + breath * 0.020 + jelly * 0.030;
+    const sx = 1 - breath * 0.014 - jelly * 0.026;
+    const sag = tr.sag * s.sag.v * (1 + jelly * 0.5);
+
+    /* — контур — */
+    const P = this.pts;
+    for (let i = 0; i < SAMPLES; i++){
+      const b = this.base[i];
+      let x = b[0], y = b[1];
+
+      // медленная «шевелящаяся» неровность вдоль нормали
+      const w = 1 + 0.020 * tr.wobble * this.noise(i * 0.55 + t * 0.45);
+      x *= w; y *= w;
+
+      // дыхание
+      x *= sx; y *= sy;
+
+      // мешок: нижняя половина тяжелеет и расплывается вширь
+      const low = smoothstep(-0.35, 0.95, y);
+      x *= 1 + sag * 0.085 * low;
+      y += sag * 0.055 * low;
+
+      // мягкое дно — тело как бы лежит на плоскости
+      const floor = 0.92;
+      if (y > floor) y = floor + softCap(y - floor, 0.10);
+
+      // едва заметный боковой снос — неуклюжесть
+      x += 0.012 * this.noiseB(t * 0.32) * (1 - low * 0.6);
+
+      P[i][0] = x * UNIT;
+      P[i][1] = y * UNIT;
+    }
+    this.body.setAttribute("d", smoothClosedPath(P));
+
+    /* — тень — */
+    let maxY = -Infinity, minX = Infinity, maxX = -Infinity;
+    for (let i = 0; i < SAMPLES; i++){
+      if (P[i][1] > maxY) maxY = P[i][1];
+      if (P[i][0] < minX) minX = P[i][0];
+      if (P[i][0] > maxX) maxX = P[i][0];
+    }
+    this.shadow.setAttribute("cx", (minX + maxX) / 2);
+    this.shadow.setAttribute("cy", maxY + 6);
+    this.shadow.setAttribute("rx", (maxX - minX) * 0.46);
+    this.shadow.setAttribute("ry", 8 + jelly * 3);
+
+    /* — лицо следует за телом — */
+    const faceY = (sag - 1) * 5 + breath * 2.2;
+    this.face.setAttribute("transform",
+      `translate(0 ${faceY.toFixed(2)}) scale(${sx.toFixed(4)} ${sy.toFixed(4)})`);
+
+    /* — глаза — */
+    const lidV = clamp(Math.max(s.lid.v, this.blink), -0.15, 1);
+    const lowV = clamp(s.lowLid.v * (1 - this.blink), 0, 1);
+    this.eyes.forEach((e, k) => {
+      const n = this.eyeNodes[k], r = n.r;
+      const px = n.cx + e.px.v * UNIT;
+      const py = n.cy + e.py.v * UNIT;
+      const pr = r * 0.44 * s.pupil.v;
+
+      n.pupil.setAttribute("cx", px.toFixed(2));
+      n.pupil.setAttribute("cy", py.toFixed(2));
+      n.pupil.setAttribute("r",  pr.toFixed(2));
+
+      // блик всегда с противоположной взгляду стороны — глаз кажется объёмным
+      n.glint.setAttribute("cx", (px - e.px.v * UNIT * 0.35 - pr * 0.34).toFixed(2));
+      n.glint.setAttribute("cy", (py - e.py.v * UNIT * 0.35 - pr * 0.38).toFixed(2));
+      n.glint.setAttribute("r",  (pr * 0.30).toFixed(2));
+
+      n.top.setAttribute("height", Math.max(0, (lidV * (r * 2 + 4)) + 2).toFixed(2));
+      const h = Math.max(0, lowV * r * 1.6);
+      n.bot.setAttribute("y", (n.cy + r - h).toFixed(2));
+      n.bot.setAttribute("height", h.toFixed(2));
+    });
+
+    /* — рот — */
+    const m = d.mouth;
+    const w  = m.w * s.mouthW.v * UNIT;
+    const cx = m.x * UNIT + s.mouthDX.v * UNIT + 2.5 * this.noiseB(t * 0.5);
+    const cy = m.y * UNIT + faceY * 0.4;
+    const cur  = s.curve.v * UNIT;
+    const open = s.open.v * UNIT;
+    const hw = w / 2;
+    const cornerY = cy - cur * 0.22;
+    const upper = cy + cur * 0.85 - open * 0.30;
+    const lower = cy + cur * 0.85 + open * 0.85;
+    this.mouth.setAttribute("d",
+      `M${(cx - hw).toFixed(1)} ${cornerY.toFixed(1)}` +
+      `Q${cx.toFixed(1)} ${upper.toFixed(1)} ${(cx + hw).toFixed(1)} ${cornerY.toFixed(1)}` +
+      `Q${cx.toFixed(1)} ${lower.toFixed(1)} ${(cx - hw).toFixed(1)} ${cornerY.toFixed(1)}Z`);
+
+    /* — каркас — */
+    if (this.wireOn){
+      for (let i = 0; i < SAMPLES; i++){
+        this.wireDots[i].setAttribute("cx", P[i][0].toFixed(1));
+        this.wireDots[i].setAttribute("cy", P[i][1].toFixed(1));
+      }
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   5. СЦЕНА
+   ══════════════════════════════════════════════════════════════════════════ */
+const grid = document.getElementById("grid");
+const creatures = [];
+const pointer = { x: 0, y: 0, active: false, idle: 999 };
+
+SPECIES.forEach((def, i) => {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.tabIndex = 0;
+  card.innerHTML =
+    `<div class="card-top"><span class="idx">${String(i + 1).padStart(2, "0")}</span>
+       <span class="shape">${def.shape}</span></div>
+     <div class="well"></div>
+     <div class="card-bot"><span class="name">${def.name}</span>
+       <span class="mood">спокоен</span></div>`;
+  grid.appendChild(card);
+
+  const c = new Creature(def, i);
+  card.querySelector(".well").appendChild(c.svg);
+
+  const moodEl = card.querySelector(".mood");
+  c.onMood = label => { moodEl.textContent = label; };
+
+  card.addEventListener("pointerenter", () => { c.hover = true;
+    if (c.mood !== "surprised") { c.applyMood("curious"); c.moodT = rnd(3, 6); } });
+  card.addEventListener("pointerleave", () => { c.hover = false; });
+  card.addEventListener("pointerdown", () => c.react("poke"));
+  card.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " "){ e.preventDefault(); c.react("poke"); }
+  });
+
+  c.card = card;
+  creatures.push(c);
+});
+
+/* ------------------------------------------------------------- курсор ---- */
+addEventListener("pointermove", e => {
+  pointer.x = e.clientX; pointer.y = e.clientY;
+  pointer.active = true; pointer.idle = 0;
+}, { passive:true });
+document.addEventListener("pointerleave", () => { pointer.active = false; });
+document.addEventListener("mouseleave", () => { pointer.active = false; });
+
+/** Экранная точка → единичные координаты конкретного существа. */
+function lookVector(c){
+  if (!pointer.active || (pointer.idle > 3.5 && !c.hover)) return null;
+  const r = c.svg.getBoundingClientRect();
+  if (!r.width) return null;
+  const k = r.width / VB * UNIT;          // пикселей на единицу
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+  const dx = (pointer.x - cx) / k;
+  const dy = (pointer.y - cy) / k;
+  const dist = Math.hypot(dx, dy);
+  if (dist > 9) return null;               // слишком далеко — не замечают
+  return [clamp(dx, -6, 6), clamp(dy, -6, 6)];
+}
+
+/* ------------------------------------------------- показ только видимых -- */
+if ("IntersectionObserver" in window){
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      const c = creatures.find(x => x.card === en.target);
+      if (c) c.visible = en.isIntersecting;
+    });
+  }, { rootMargin:"120px" });
+  creatures.forEach(c => io.observe(c.card));
+}
+
+/* ------------------------------------------------------------ кнопки ---- */
+document.querySelectorAll("[data-mood]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    creatures.forEach((c, i) => setTimeout(() => {
+      c.routine = null;
+      c.applyMood(btn.dataset.mood);
+      c.moodT = rnd(3.5, 7);
+      if (btn.dataset.mood === "surprised") c.react("poke");
+    }, i * 90));
+  });
+});
+
+const wireBtn = document.getElementById("wire");
+wireBtn.addEventListener("click", () => {
+  const on = wireBtn.getAttribute("aria-pressed") !== "true";
+  wireBtn.setAttribute("aria-pressed", String(on));
+  creatures.forEach(c => {
+    c.wireOn = on;
+    c.wire.setAttribute("display", on ? "" : "none");
+    c.body.setAttribute("opacity", on ? ".22" : "1");
+  });
+});
+
+/* ═══════════════════════════════════════════════ 6. ГЛАВНЫЙ ЦИКЛ ═══ */
+const statEl = document.getElementById("stat");
+let last = performance.now(), fpsAcc = 0, fpsN = 0, statT = 0;
+
+function loop(now){
+  let dt = (now - last) / 1000;
+  last = now;
+  if (!(dt > 0)) dt = 1 / 60;          // защита от кривой метки времени
+  if (dt > 0.05) dt = 0.05;               // после фонового таба не «прыгаем»
+
+  pointer.idle += dt;
+
+  for (const c of creatures){
+    if (!c.visible) continue;
+    c.update(dt, lookVector(c));
+    c.render();
+  }
+
+  fpsAcc += dt; fpsN++; statT += dt;
+  if (statT > 0.6){
+    const fps = Math.round(fpsN / fpsAcc);
+    statEl.textContent = `${creatures.length} существ · ${SAMPLES} точек на контур · ${fps} к/с`;
+    fpsAcc = 0; fpsN = 0; statT = 0;
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+document.addEventListener("visibilitychange", () => { last = performance.now(); });
+
+/* мягкий выход на сцену: первые секунды все смотрят по сторонам */
+creatures.forEach((c, i) => setTimeout(() => {
+  c.applyMood(i % 2 ? "curious" : "calm");
+  c.moodT = rnd(2.5, 5);
+}, 400 + i * 220));
+</script>
+</body>
+</html>
