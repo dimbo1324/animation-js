@@ -5,12 +5,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   width: 70%;
   height: 70%;
-  min-width: 50%;
-  min-height: 50%;
-  max-width: 95%;
-  max-height: 95%;
   border-radius: 16px;
   transition:
     background-color 0.2s ease,
@@ -19,27 +16,33 @@
 }
 
 .tile[data-theme='light'] {
-  --tile-bg: #ffffff;
-  --tile-border: #e2e8f0;
-  --tile-fg: #334155;
-  --tile-toolbar-bg: #f8fafc;
-  --tile-accent: #6366f1;
-  --tile-accent-soft: rgb(99 102 241 / 16%);
+  --tile-bg: #eef1f6;
+  --tile-border: #dbe1ea;
+  --tile-fg: #33404f;
+  --tile-muted: #8996a8;
+  --tile-toolbar-bg: #ffffff;
+  --tile-menu-bg: #ffffff;
+  --tile-menu-hover: #f1f4f9;
+  --tile-accent: #5b6ee8;
+  --tile-accent-soft: rgb(91 110 232 / 16%);
 
   border: 1px solid var(--tile-border);
   background-color: var(--tile-bg);
   box-shadow:
-    0 1px 2px rgb(15 23 42 / 4%),
-    0 12px 28px rgb(15 23 42 / 8%);
+    0 1px 2px rgb(15 23 42 / 5%),
+    0 12px 28px rgb(15 23 42 / 9%);
 }
 
 .tile[data-theme='dark'] {
   --tile-bg: #0f172a;
-  --tile-border: #1e293b;
+  --tile-border: #263449;
   --tile-fg: #e2e8f0;
-  --tile-toolbar-bg: #16213a;
+  --tile-muted: #64748b;
+  --tile-toolbar-bg: #17223a;
+  --tile-menu-bg: #17223a;
+  --tile-menu-hover: #1f2c47;
   --tile-accent: #818cf8;
-  --tile-accent-soft: rgb(129 140 248 / 20%);
+  --tile-accent-soft: rgb(129 140 248 / 22%);
 
   border: 1px solid var(--tile-border);
   background-color: var(--tile-bg);
@@ -87,7 +90,7 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  z-index: 3;
+  z-index: 4;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -120,46 +123,126 @@
   height: 18px;
 }
 
-.tile__select-wrapper {
+/* Size dropdown */
+
+.tile__dropdown {
   position: relative;
-  display: flex;
-  align-items: center;
 }
 
-.tile__select {
+.tile__dropdown-trigger {
+  display: flex;
+  align-items: center;
   height: 32px;
-  padding: 0 26px 0 10px;
+  padding: 0 10px;
   font-family: inherit;
   font-size: 0.8125rem;
   color: var(--tile-fg);
   cursor: pointer;
-  appearance: none;
   border: 1px solid var(--tile-border);
   border-radius: 8px;
   background-color: var(--tile-toolbar-bg);
+  gap: 8px;
   transition: border-color 0.15s ease;
 }
 
-.tile__select:hover,
-.tile__select:focus-visible {
+.tile__dropdown-trigger:hover,
+.tile__dropdown--open .tile__dropdown-trigger {
   border-color: var(--tile-accent);
-  outline: none;
 }
 
-.tile__select-arrow {
-  position: absolute;
-  right: 8px;
+.tile__dropdown-label {
+  white-space: nowrap;
+}
+
+.tile__dropdown-arrow {
   display: flex;
   width: 14px;
   height: 14px;
-  color: var(--tile-fg);
-  opacity: 0.6;
-  pointer-events: none;
+  color: var(--tile-muted);
+  transition: transform 0.15s ease;
 }
 
-.tile__select-arrow svg {
+.tile__dropdown-arrow svg {
   width: 100%;
   height: 100%;
+}
+
+.tile__dropdown--open .tile__dropdown-arrow {
+  transform: rotate(180deg);
+  color: var(--tile-accent);
+}
+
+.tile__dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 5;
+  width: 168px;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid var(--tile-border);
+  border-radius: 10px;
+  background-color: var(--tile-menu-bg);
+  box-shadow:
+    0 4px 10px rgb(15 23 42 / 8%),
+    0 16px 32px rgb(15 23 42 / 14%);
+  animation: tile-dropdown-in 0.12s ease;
+}
+
+@keyframes tile-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tile__dropdown-option {
+  display: flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 8px;
+  font-size: 0.8125rem;
+  color: var(--tile-fg);
+  cursor: pointer;
+  border-radius: 6px;
+  gap: 8px;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.tile__dropdown-option:hover {
+  background-color: var(--tile-menu-hover);
+}
+
+.tile__dropdown-option-icon {
+  display: flex;
+  width: 16px;
+  height: 16px;
+  opacity: 0.75;
+}
+
+.tile__dropdown-option-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.tile__dropdown-option--disabled {
+  color: var(--tile-muted);
+  cursor: not-allowed;
+}
+
+.tile__dropdown-option--disabled:hover {
+  background-color: transparent;
+}
+
+.tile__dropdown-option--disabled .tile__dropdown-option-icon {
+  opacity: 0.35;
 }
 
 /* Resize handles */
@@ -171,46 +254,74 @@
 
 .tile__handle::after {
   position: absolute;
-  inset: 2px;
+  top: 50%;
+  left: 50%;
   content: '';
-  border-radius: 4px;
-  background-color: transparent;
-  transition: background-color 0.15s ease;
+  opacity: 0;
+  background-color: var(--tile-accent);
+  border-radius: 999px;
+  box-shadow: 0 0 0 0 var(--tile-accent-soft);
+  transform: translate(-50%, -50%);
+  transition:
+    opacity 0.15s ease,
+    box-shadow 0.15s ease;
+  pointer-events: none;
 }
 
 .tile__handle:hover::after,
 .tile__handle--active::after {
-  background-color: var(--tile-accent-soft);
+  opacity: 1;
+  box-shadow: 0 0 0 5px var(--tile-accent-soft);
+}
+
+.tile__handle[data-axis='horizontal']::after,
+.tile__handle[data-axis='vertical']::after {
+  border-radius: 4px;
+}
+
+.tile__handle[data-axis='vertical']::after {
+  width: 28px;
+  height: 3px;
+}
+
+.tile__handle[data-axis='horizontal']::after {
+  width: 3px;
+  height: 28px;
+}
+
+.tile__handle[data-axis='corner']::after {
+  width: 7px;
+  height: 7px;
 }
 
 .tile__handle--top,
 .tile__handle--bottom {
-  right: 14px;
-  left: 14px;
-  height: 10px;
+  right: 22px;
+  left: 22px;
+  height: 14px;
 }
 
 .tile__handle--top {
-  top: -5px;
+  top: -7px;
 }
 
 .tile__handle--bottom {
-  bottom: -5px;
+  bottom: -7px;
 }
 
 .tile__handle--left,
 .tile__handle--right {
-  top: 14px;
-  bottom: 14px;
-  width: 10px;
+  top: 22px;
+  bottom: 22px;
+  width: 14px;
 }
 
 .tile__handle--left {
-  left: -5px;
+  left: -7px;
 }
 
 .tile__handle--right {
-  right: -5px;
+  right: -7px;
 }
 
 .tile__handle--top-left,
@@ -218,26 +329,26 @@
 .tile__handle--bottom-left,
 .tile__handle--bottom-right {
   z-index: 2;
-  width: 16px;
-  height: 16px;
+  width: 22px;
+  height: 22px;
 }
 
 .tile__handle--top-left {
-  top: -5px;
-  left: -5px;
+  top: -7px;
+  left: -7px;
 }
 
 .tile__handle--top-right {
-  top: -5px;
-  right: -5px;
+  top: -7px;
+  right: -7px;
 }
 
 .tile__handle--bottom-left {
-  bottom: -5px;
-  left: -5px;
+  bottom: -7px;
+  left: -7px;
 }
 
 .tile__handle--bottom-right {
-  right: -5px;
-  bottom: -5px;
+  right: -7px;
+  bottom: -7px;
 }

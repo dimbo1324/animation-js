@@ -9,43 +9,83 @@ import {
   MOON_ICON,
   CHEVRON_DOWN_ICON,
   SPARKLES_ICON,
+  MAXIMIZE_ICON,
+  MINIMIZE_ICON,
 } from '../utils/icons.js';
 
 const MIN_SIZE_RATIO = 0.5;
 const MAX_SIZE_RATIO = 0.95;
 const INITIAL_SIZE_RATIO = 0.7;
+const SNAP_TOLERANCE_PX = 1;
 
 const SIZE_PRESETS = [
-  { value: 'max', label: 'Максимум (95%)', ratio: MAX_SIZE_RATIO },
-  { value: 'half', label: '50%', ratio: 0.5 },
-  { value: 'min', label: 'Минимум', ratio: MIN_SIZE_RATIO },
+  {
+    value: 'max',
+    label: 'Максимум',
+    icon: MAXIMIZE_ICON,
+    ratio: MAX_SIZE_RATIO,
+  },
+  {
+    value: 'min',
+    label: 'Минимум',
+    icon: MINIMIZE_ICON,
+    ratio: MIN_SIZE_RATIO,
+  },
 ];
 
 const HANDLE_CONFIG = [
-  { position: 'top', cursor: 'ns-resize', horizontal: 0, vertical: -1 },
-  { position: 'bottom', cursor: 'ns-resize', horizontal: 0, vertical: 1 },
-  { position: 'left', cursor: 'ew-resize', horizontal: -1, vertical: 0 },
-  { position: 'right', cursor: 'ew-resize', horizontal: 1, vertical: 0 },
+  {
+    position: 'top',
+    axis: 'vertical',
+    cursor: 'ns-resize',
+    horizontal: 0,
+    vertical: -1,
+  },
+  {
+    position: 'bottom',
+    axis: 'vertical',
+    cursor: 'ns-resize',
+    horizontal: 0,
+    vertical: 1,
+  },
+  {
+    position: 'left',
+    axis: 'horizontal',
+    cursor: 'ew-resize',
+    horizontal: -1,
+    vertical: 0,
+  },
+  {
+    position: 'right',
+    axis: 'horizontal',
+    cursor: 'ew-resize',
+    horizontal: 1,
+    vertical: 0,
+  },
   {
     position: 'top-left',
+    axis: 'corner',
     cursor: 'nwse-resize',
     horizontal: -1,
     vertical: -1,
   },
   {
     position: 'top-right',
+    axis: 'corner',
     cursor: 'nesw-resize',
     horizontal: 1,
     vertical: -1,
   },
   {
     position: 'bottom-left',
+    axis: 'corner',
     cursor: 'nesw-resize',
     horizontal: -1,
     vertical: 1,
   },
   {
     position: 'bottom-right',
+    axis: 'corner',
     cursor: 'nwse-resize',
     horizontal: 1,
     vertical: 1,
@@ -87,7 +127,7 @@ function createToolbar(tile) {
   const toolbar = document.createElement('div');
   toolbar.className = 'tile__toolbar';
 
-  toolbar.append(createThemeToggle(tile), createSizeSelect(tile));
+  toolbar.append(createThemeToggle(tile), createSizeDropdown(tile));
 
   return toolbar;
 }
@@ -114,49 +154,161 @@ function createThemeToggle(tile) {
 }
 
 /**
- * Create the quick size-preset dropdown
+ * Create the quick size-preset dropdown (custom, not a native select)
  * @param {HTMLElement} tile - Tile element to resize
- * @returns {HTMLDivElement} Size select wrapper element
+ * @returns {HTMLDivElement} Dropdown wrapper element
  */
-function createSizeSelect(tile) {
+function createSizeDropdown(tile) {
   const wrapper = document.createElement('div');
-  wrapper.className = 'tile__select-wrapper';
+  wrapper.className = 'tile__dropdown';
 
-  const select = document.createElement('select');
-  select.className = 'tile__select';
-  select.setAttribute('aria-label', 'Resize tile');
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'tile__dropdown-trigger';
+  trigger.setAttribute('aria-haspopup', 'listbox');
+  trigger.setAttribute('aria-expanded', 'false');
 
-  const placeholder = document.createElement('option');
-  placeholder.value = '';
-  placeholder.textContent = 'Размер';
-  placeholder.disabled = true;
-  placeholder.selected = true;
-  select.appendChild(placeholder);
+  const triggerLabel = document.createElement('span');
+  triggerLabel.className = 'tile__dropdown-label';
+  triggerLabel.textContent = 'Размер';
 
-  SIZE_PRESETS.forEach((preset) => {
-    const option = document.createElement('option');
-    option.value = preset.value;
-    option.textContent = preset.label;
-    select.appendChild(option);
-  });
+  const triggerArrow = document.createElement('span');
+  triggerArrow.className = 'tile__dropdown-arrow';
+  triggerArrow.innerHTML = CHEVRON_DOWN_ICON;
 
-  select.addEventListener('change', () => {
-    const preset = SIZE_PRESETS.find((item) => item.value === select.value);
+  trigger.append(triggerLabel, triggerArrow);
 
-    if (preset) {
-      applySizeRatio(tile, preset.ratio);
+  const menu = document.createElement('ul');
+  menu.className = 'tile__dropdown-menu';
+  menu.setAttribute('role', 'listbox');
+  menu.hidden = true;
+
+  const options = SIZE_PRESETS.map((preset) =>
+    createSizeOption(preset, tile, wrapper)
+  );
+  menu.append(...options);
+
+  wrapper.append(trigger, menu);
+
+  trigger.addEventListener('click', () => {
+    const willOpen = menu.hidden;
+
+    if (willOpen) {
+      updateOptionAvailability(tile, options);
     }
 
-    select.value = '';
+    menu.hidden = !willOpen;
+    trigger.setAttribute('aria-expanded', String(willOpen));
+    wrapper.classList.toggle('tile__dropdown--open', willOpen);
   });
 
-  const arrow = document.createElement('span');
-  arrow.className = 'tile__select-arrow';
-  arrow.innerHTML = CHEVRON_DOWN_ICON;
+  document.addEventListener('pointerdown', (event) => {
+    if (!wrapper.contains(event.target)) {
+      closeDropdown(wrapper, trigger, menu);
+    }
+  });
 
-  wrapper.append(select, arrow);
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeDropdown(wrapper, trigger, menu);
+    }
+  });
 
   return wrapper;
+}
+
+/**
+ * Create one option row for the size dropdown
+ * @param {{ value: string, label: string, icon: string, ratio: number }} preset
+ *   - Preset descriptor
+ * @param {HTMLElement} tile - Tile element to resize
+ * @param {HTMLElement} wrapper - Dropdown wrapper (used to close on select)
+ * @returns {HTMLLIElement} Option element
+ */
+function createSizeOption(preset, tile, wrapper) {
+  const option = document.createElement('li');
+  option.className = 'tile__dropdown-option';
+  option.dataset.value = preset.value;
+  option.setAttribute('role', 'option');
+  option.setAttribute('tabindex', '-1');
+
+  const icon = document.createElement('span');
+  icon.className = 'tile__dropdown-option-icon';
+  icon.innerHTML = preset.icon;
+
+  const label = document.createElement('span');
+  label.textContent = preset.label;
+
+  option.append(icon, label);
+
+  option.addEventListener('click', () => {
+    if (option.getAttribute('aria-disabled') === 'true') {
+      return;
+    }
+
+    applySizeRatio(tile, preset.ratio);
+
+    const trigger = wrapper.querySelector('.tile__dropdown-trigger');
+    const menu = wrapper.querySelector('.tile__dropdown-menu');
+    closeDropdown(wrapper, trigger, menu);
+  });
+
+  return option;
+}
+
+/**
+ * Close the size dropdown menu
+ * @param {HTMLElement} wrapper - Dropdown wrapper
+ * @param {HTMLElement} trigger - Dropdown trigger button
+ * @param {HTMLElement} menu - Dropdown menu list
+ */
+function closeDropdown(wrapper, trigger, menu) {
+  menu.hidden = true;
+  trigger.setAttribute('aria-expanded', 'false');
+  wrapper.classList.remove('tile__dropdown--open');
+}
+
+/**
+ * Grey out preset options that would have no effect at the tile's
+ * current size
+ * @param {HTMLElement} tile - Tile element
+ * @param {HTMLElement[]} options - Rendered option elements
+ */
+function updateOptionAvailability(tile, options) {
+  options.forEach((option) => {
+    const preset = SIZE_PRESETS.find(
+      (item) => item.value === option.dataset.value
+    );
+    const disabled = isAtRatio(tile, preset.ratio);
+
+    option.classList.toggle('tile__dropdown-option--disabled', disabled);
+    option.setAttribute('aria-disabled', String(disabled));
+  });
+}
+
+/**
+ * Check whether the tile is already sized at a given ratio
+ * @param {HTMLElement} tile - Tile element
+ * @param {number} ratio - Fraction of the available bounds (0-1)
+ * @returns {boolean} True if the current size already matches the ratio
+ */
+function isAtRatio(tile, ratio) {
+  const bounds = getAvailableBounds(tile);
+  const targetWidth = clamp(
+    bounds.width * ratio,
+    bounds.width * MIN_SIZE_RATIO,
+    bounds.width * MAX_SIZE_RATIO
+  );
+  const targetHeight = clamp(
+    bounds.height * ratio,
+    bounds.height * MIN_SIZE_RATIO,
+    bounds.height * MAX_SIZE_RATIO
+  );
+
+  return (
+    Math.abs(tile.offsetWidth - targetWidth) < SNAP_TOLERANCE_PX &&
+    Math.abs(tile.offsetHeight - targetHeight) < SNAP_TOLERANCE_PX
+  );
 }
 
 /**
@@ -182,12 +334,14 @@ function createEmptyState() {
 
 /**
  * Create a resize handle for one edge or corner
- * @param {{ position: string, cursor: string }} config - Handle configuration
+ * @param {{ position: string, axis: string, cursor: string }} config -
+ *   Handle configuration
  * @returns {HTMLDivElement} Handle element
  */
 function createHandle(config) {
   const handle = document.createElement('div');
   handle.className = `tile__handle tile__handle--${config.position}`;
+  handle.dataset.axis = config.axis;
   handle.style.cursor = config.cursor;
   return handle;
 }
@@ -204,9 +358,15 @@ function getAvailableBounds(tile) {
     return { width: window.innerWidth, height: window.innerHeight };
   }
 
+  const style = window.getComputedStyle(parent);
+  const paddingX =
+    parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+  const paddingY =
+    parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+
   return {
-    width: parent.clientWidth,
-    height: parent.clientHeight,
+    width: parent.clientWidth - paddingX,
+    height: parent.clientHeight - paddingY,
   };
 }
 
