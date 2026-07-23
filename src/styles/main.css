@@ -27,9 +27,12 @@ body {
 /* Main Container */
 
 #app {
-  min-height: 100vh;
   display: flex;
-  flex-direction: column;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
 }
 
 /* Responsive Design */

@@ -1,0 +1,117 @@
+/* Stage (podium) — background card that hosts the animated figure */
+
+.stage {
+  position: relative;
+  width: min(640px, 92vw);
+  aspect-ratio: 4 / 3;
+  margin: auto;
+  overflow: hidden;
+  border-radius: 24px;
+  background: linear-gradient(
+    180deg,
+    #bfe4ff 0%,
+    #eaf6ff 55%,
+    #f7fbff 100%
+  );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 20px 40px -12px rgba(20, 40, 70, 0.35),
+    0 2px 8px rgba(20, 40, 70, 0.12);
+}
+
+.stage__glow {
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 45%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 244, 191, 0.9) 0%,
+    rgba(255, 244, 191, 0) 70%
+  );
+  pointer-events: none;
+}
+
+.stage__floor {
+  position: absolute;
+  right: 6%;
+  bottom: 8%;
+  left: 6%;
+  height: 14%;
+  border-radius: 50%;
+  background: linear-gradient(
+    180deg,
+    #9bd3a8 0%,
+    #7cc08d 100%
+  );
+  box-shadow: 0 6px 16px rgba(20, 60, 30, 0.25);
+}
+
+.stage__floor::after {
+  position: absolute;
+  top: 8%;
+  right: 4%;
+  bottom: auto;
+  left: 4%;
+  height: 30%;
+  content: '';
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.stage__actor {
+  position: absolute;
+  bottom: 21%;
+  left: 50%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transform: translateX(-50%);
+}
+
+.stage__placeholder {
+  font-size: 0.85rem;
+  color: #5b7a8c;
+  text-align: center;
+  opacity: 0.7;
+}
+
+/* Responsive Design */
+
+@media (prefers-color-scheme: dark) {
+  .stage {
+    background: linear-gradient(
+      180deg,
+      #1c2b3d 0%,
+      #17212e 55%,
+      #121a24 100%
+    );
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.05) inset,
+      0 20px 40px -12px rgba(0, 0, 0, 0.6),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  .stage__glow {
+    background: radial-gradient(
+      circle,
+      rgba(255, 244, 191, 0.15) 0%,
+      rgba(255, 244, 191, 0) 70%
+    );
+  }
+
+  .stage__floor {
+    background: linear-gradient(
+      180deg,
+      #2f5c3d 0%,
+      #244a30 100%
+    );
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  .stage__placeholder {
+    color: #7fa0b3;
+  }
+}

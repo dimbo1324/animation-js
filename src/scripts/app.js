@@ -2,6 +2,8 @@
  * Application initialization and core logic
  */
 
+import { createStage } from '../components/Stage.js';
+
 /**
  * Initialize the application
  */
@@ -13,6 +15,8 @@ export function initializeApp() {
     return;
   }
 
-  app.innerHTML = '<h1>Welcome to Animation JS</h1>';
+  const stage = createStage();
+  app.appendChild(stage);
+
   console.log('Application initialized');
 }
