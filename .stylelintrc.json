@@ -1,0 +1,14 @@
+{
+  "extends": ["stylelint-config-standard", "stylelint-config-prettier"],
+  "rules": {
+    "no-descending-specificity": null,
+    "selector-class-pattern": null,
+    "color-hex-length": "long",
+    "declaration-empty-line-before": null,
+    "rule-empty-line-before": [
+      "always",
+      { "except": ["first-nested"] }
+    ]
+  },
+  "ignoreFiles": ["dist/**", "node_modules/**"]
+}
