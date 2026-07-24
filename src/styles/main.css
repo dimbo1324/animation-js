@@ -4,10 +4,12 @@
  * Every other CSS file in the project is reached from here. `@import`
  * rules must stay at the top of the file, and the order matters: tokens
  * define the variables everything else consumes, base sets the page frame,
- * the shell styles the container, and scenes style what runs inside it.
+ * the shell styles the container, scenes style the surface inside it, and
+ * models style the figures standing on that surface.
  */
 
 @import url('./tokens.css');
 @import url('./base.css');
 @import url('../shell/shell.css');
 @import url('../scenes/scenes.css');
+@import url('../models/models.css');

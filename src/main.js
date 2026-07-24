@@ -1,17 +1,18 @@
 /**
  * Application entry point.
  *
- * The only file that knows about the shell, the engine, and the scenes at
- * the same time. It wires them together and does nothing else — every
- * behaviour lives in the module that owns it.
+ * The only file that knows about the shell, the engine, the scenes, and the
+ * models at the same time. It wires them together and does nothing else.
  *
- * The stage starts empty on purpose. A scene mounts only when the toolbar
- * asks for one, and the shell never learns which scene that is.
+ * The order matters. The model's data sheet is read first and handed to the
+ * shell, so the tile has already grown to fit the figure by the time the
+ * figure is mounted — and the size is frozen while it runs.
  */
 
 import { SceneHost, effect, loadScene, ticker } from './core/index.js';
-import { createShell, shellState } from './shell/index.js';
+import { createShell, setStageMin, shellState } from './shell/index.js';
 import { DEMO_SCENE_ID } from './scenes/index.js';
+import { DEMO_MODEL_ID, getModel, loadModel } from './models/index.js';
 
 const container = document.getElementById('app');
 
@@ -26,6 +27,10 @@ const shell = createShell();
 container.append(shell.element);
 shell.activate();
 
+const demo = getModel(DEMO_MODEL_ID);
+
+setStageMin(demo.minStage);
+
 const host = new SceneHost(shell.stage, ticker);
 
 async function syncScene(visible) {
@@ -36,15 +41,18 @@ async function syncScene(visible) {
     return;
   }
 
-  const SceneClass = await loadScene(DEMO_SCENE_ID);
+  const [SceneClass, ModelClass] = await Promise.all([
+    loadScene(DEMO_SCENE_ID),
+    loadModel(DEMO_MODEL_ID),
+  ]);
 
-  // The toggle may have been switched off again while the module loaded.
+  // The toggle may have been switched off again while the modules loaded.
   if (!shellState.sceneVisible) {
     return;
   }
 
-  host.mount(SceneClass);
-  shellState.sceneTitle = SceneClass.title;
+  host.mount(SceneClass, { options: { model: ModelClass } });
+  shellState.sceneTitle = demo.title;
 }
 
 const stopSceneSync = effect(() => {
@@ -56,6 +64,6 @@ ticker.start();
 window.addEventListener('pagehide', () => {
   ticker.stop();
   stopSceneSync();
-  host.unmount();
+  host.dispose();
   shell.dispose();
 });

@@ -6,44 +6,37 @@
  * size. Keyboard and screen-reader behaviour is therefore ours to provide:
  * arrow keys move, Enter and Space choose, Escape closes, focus returns to
  * the trigger.
+ *
+ * The two presets are the ends of the range the tile is allowed to occupy.
+ * "Максимум" is a fraction of the page, as it has always been. "Минимум"
+ * is whatever the running model said it needs — so on a stage that has
+ * been given a demanding figure, the smallest available tile is larger
+ * than it used to be, and the figure still fits.
  */
 
-import { element } from '../core/index.js';
+import { effect, element } from '../core/index.js';
 import {
   CHEVRON_DOWN_ICON,
   MAXIMIZE_ICON,
   MINIMIZE_ICON,
 } from '../utils/icons.js';
-import {
-  MAX_SIZE_RATIO,
-  MIN_SIZE_RATIO,
-  matchesRatio,
-  measureBounds,
-  sizeForRatio,
-} from './geometry.js';
-import { setSize, shellState } from './state.js';
+import { matchesSize } from './geometry.js';
+import { sizeLocked } from './state.js';
+
+const LOCKED_HINT =
+  'Размер плитки меняется только при остановленной анимации';
 
 const SIZE_PRESETS = [
-  {
-    value: 'max',
-    label: 'Максимум',
-    icon: MAXIMIZE_ICON,
-    ratio: MAX_SIZE_RATIO,
-  },
-  {
-    value: 'min',
-    label: 'Минимум',
-    icon: MINIMIZE_ICON,
-    ratio: MIN_SIZE_RATIO,
-  },
+  { edge: 'max', label: 'Максимум', icon: MAXIMIZE_ICON },
+  { edge: 'min', label: 'Минимум', icon: MINIMIZE_ICON },
 ];
 
 /**
  * Create the size preset dropdown.
- * @param {HTMLElement} tile - Tile the presets resize.
+ * @param {object} sizing - The tile's sizing controller.
  * @returns {{ element: HTMLElement, dispose: () => void }} Widget.
  */
-export function createSizeMenu(tile) {
+export function createSizeMenu(sizing) {
   const wrapper = element('div', 'tile__dropdown');
   const trigger = createTrigger();
   const menu = element('ul', 'tile__dropdown-menu');
@@ -53,7 +46,7 @@ export function createSizeMenu(tile) {
   menu.hidden = true;
 
   const options = SIZE_PRESETS.map((preset) =>
-    createOption(preset, tile, close),
+    createOption(preset, sizing, close),
   );
 
   menu.append(...options);
@@ -64,7 +57,7 @@ export function createSizeMenu(tile) {
   }
 
   function open() {
-    refreshAvailability(tile, options);
+    refreshAvailability(sizing, options);
     menu.hidden = false;
     trigger.setAttribute('aria-expanded', 'true');
     wrapper.classList.add('tile__dropdown--open');
@@ -118,6 +111,17 @@ export function createSizeMenu(tile) {
     }
   }
 
+  const stopLockEffect = effect(() => {
+    const locked = sizeLocked.value;
+
+    trigger.disabled = locked;
+    trigger.title = locked ? LOCKED_HINT : '';
+
+    if (locked) {
+      close();
+    }
+  });
+
   trigger.addEventListener('click', onTriggerClick);
   document.addEventListener('pointerdown', onPointerDown);
   document.addEventListener('keydown', onKeyDown);
@@ -126,6 +130,7 @@ export function createSizeMenu(tile) {
     element: wrapper,
 
     dispose() {
+      stopLockEffect();
       trigger.removeEventListener('click', onTriggerClick);
       document.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
@@ -153,10 +158,10 @@ function createTrigger() {
   return trigger;
 }
 
-function createOption(preset, tile, close) {
+function createOption(preset, sizing, close) {
   const option = element('li', 'tile__dropdown-option');
 
-  option.dataset.value = preset.value;
+  option.dataset.value = preset.edge;
   option.setAttribute('role', 'option');
   option.setAttribute('tabindex', '-1');
 
@@ -174,7 +179,7 @@ function createOption(preset, tile, close) {
       return;
     }
 
-    setSize(sizeForRatio(measureBounds(tile), preset.ratio));
+    sizing.applyEdge(preset.edge);
     close({ restoreFocus: true });
   }
 
@@ -189,15 +194,14 @@ function createOption(preset, tile, close) {
   return option;
 }
 
-function refreshAvailability(tile, options) {
-  const bounds = measureBounds(tile);
-  const size = { width: shellState.width, height: shellState.height };
+function refreshAvailability(sizing, options) {
+  const limits = sizing.refresh();
+  const size = sizing.current();
 
   options.forEach((option, index) => {
-    const disabled = matchesRatio(
-      bounds,
+    const disabled = matchesSize(
       size,
-      SIZE_PRESETS[index].ratio,
+      limits[SIZE_PRESETS[index].edge],
     );
 
     option.classList.toggle(

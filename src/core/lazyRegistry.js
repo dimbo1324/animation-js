@@ -26,7 +26,10 @@
  *   load: (id: string) => Promise<Function>,
  * }} The registry.
  */
-export function createLazyRegistry({ kind, describe = (entry) => entry }) {
+export function createLazyRegistry({
+  kind,
+  describe = (entry) => entry,
+}) {
   const entries = new Map();
 
   function entryFor(id) {

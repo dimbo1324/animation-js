@@ -139,7 +139,7 @@ export default [
   },
 
   {
-    files: ['src/scenes/**/*.js'],
+    files: ['src/scenes/**/*.js', 'src/models/**/*.js'],
     rules: {
       'no-restricted-syntax': [
         'error',

@@ -1,11 +1,11 @@
 /*
  * Scene stylesheets.
  *
- * One line per registered scene. `_template/scene.css` is deliberately
- * absent: the template is a starting point, not a running scene.
+ * One line per registered scene, when a scene has anything to style. The
+ * showcase does not: it is a bare surface, and the backdrop belongs to
+ * whichever model is standing on it. `_template/scene.css` is deliberately
+ * absent — the template is a starting point, not a running scene.
  */
-
-@import url('./creatures/scene.css');
 
 /* Shared frame every scene is mounted into. */
 

@@ -11,16 +11,21 @@
  *
  * `onUpdate` resolves every position, hop, and lean into `#state`.
  * `onRender` does nothing but write `#state` to the DOM.
+ *
+ * Every length below is authored for `manifest.naturalSize` and multiplied
+ * by `renderScale` in the frame path, so the cast fits whatever stage it is
+ * given instead of spilling off a small one.
  */
 
 import {
-  Scene,
+  Model,
   prefersReducedMotion,
   svgElement,
 } from '../../core/index.js';
 import { clamp } from '../../utils/math.js';
 import { Creature } from './Creature.js';
 import { CreatureView } from './CreatureView.js';
+import { manifest } from './manifest.js';
 import { SPECIES } from './species.js';
 import { Trail } from './Trail.js';
 
@@ -37,9 +42,11 @@ const REST_SPACING = 130;
 const POINTER_REACH = 6;
 const POINTER_IDLE_LIMIT = 3.5;
 
-export default class CreaturesScene extends Scene {
-  static id = 'creatures';
-  static title = 'Трое мешковатых';
+export default class CreaturesModel extends Model {
+  static id = manifest.id;
+  static title = manifest.title;
+  static naturalSize = manifest.naturalSize;
+  static fitRange = manifest.fitRange;
 
   #svg = null;
   #creatures = [];
@@ -50,7 +57,7 @@ export default class CreaturesScene extends Scene {
   #time = 0;
   #range = 0;
   #groundY = 0;
-  #stage = { left: 0, top: 0, width: 0, height: 0 };
+  #scale = 1;
   #pointer = { x: 0, y: 0, active: false, idle: 999 };
   #reduced = false;
 
@@ -69,10 +76,10 @@ export default class CreaturesScene extends Scene {
     }));
 
     const shadows = svgElement('g', {
-      class: 'scene-creatures__shadows',
+      class: 'model-creatures__shadows',
     });
     const bodies = svgElement('g', {
-      class: 'scene-creatures__bodies',
+      class: 'model-creatures__bodies',
     });
 
     for (const creature of this.#creatures) {
@@ -83,7 +90,7 @@ export default class CreaturesScene extends Scene {
     this.#svg = svgElement(
       'svg',
       {
-        'class': 'scene-creatures__stage',
+        'class': 'model-creatures__stage',
         'role': 'img',
         'aria-label': 'Три существа бегут друг за другом',
       },
@@ -92,7 +99,6 @@ export default class CreaturesScene extends Scene {
     );
 
     this.root.append(this.#svg);
-    this.#bindPointer();
   }
 
   onUpdate(dt) {
@@ -117,7 +123,8 @@ export default class CreaturesScene extends Scene {
   }
 
   onRender() {
-    const centreX = this.#stage.width / 2;
+    const centreX = this.viewport.width / 2;
+    const scale = this.#scale;
 
     for (let index = 0; index < this.#creatures.length; index += 1) {
       const state = this.#state[index];
@@ -126,38 +133,46 @@ export default class CreaturesScene extends Scene {
         x: centreX + state.x,
         groundY: this.#groundY,
         lift: state.lift,
-        scale: SCALES[index],
+        scale: SCALES[index] * scale,
         lean: state.lean,
       });
     }
   }
 
-  onResize(size) {
-    if (size.width === 0 || size.height === 0) {
+  onResize({ width, height }) {
+    if (width === 0 || height === 0) {
       return;
     }
 
-    this.#svg.setAttribute(
-      'viewBox',
-      `0 0 ${size.width} ${size.height}`,
-    );
-    this.#groundY = size.height * GROUND_RATIO;
-    this.#range = Math.max(20, size.width / 2 - EDGE_PADDING);
+    // Cached once per resize on purpose: `renderScale` is derived from the
+    // viewport, and the frame path must not recompute a constant three
+    // times per frame.
+    this.#scale = this.renderScale;
+
+    this.#svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    this.#groundY = height * GROUND_RATIO;
+    this.#range = Math.max(20, width / 2 - EDGE_PADDING * this.#scale);
     this.#leader.x = clamp(this.#leader.x, -this.#range, this.#range);
 
     // The path just changed shape, so every recorded position is a lie.
     this.#trail.clear();
+  }
 
-    // One layout read per resize, never per frame. The pointer handler
-    // needs the stage's viewport offset and must not measure while running.
-    const rect = this.root.getBoundingClientRect();
+  onPointerMove(point) {
+    this.#pointer.x = point.x;
+    this.#pointer.y = point.y;
+    this.#pointer.active = true;
+    this.#pointer.idle = 0;
+  }
 
-    this.#stage = {
-      left: rect.left,
-      top: rect.top,
-      width: size.width,
-      height: size.height,
-    };
+  onPointerLeave() {
+    this.#pointer.active = false;
+  }
+
+  onPointerDown() {
+    for (const creature of this.#creatures) {
+      creature.jolt(7.5);
+    }
   }
 
   onDestroy() {
@@ -170,7 +185,7 @@ export default class CreaturesScene extends Scene {
   #advanceLeader(dt) {
     const leader = this.#leader;
 
-    leader.x += RUN_SPEED * leader.direction * dt;
+    leader.x += RUN_SPEED * this.#scale * leader.direction * dt;
 
     // Reflect the overshoot instead of snapping to the edge, so the
     // distance run stays identical at every frame rate.
@@ -205,37 +220,15 @@ export default class CreaturesScene extends Scene {
     state.travel += Math.abs(state.x - state.previousX);
     state.previousX = state.x;
 
-    const hop = Math.abs(
-      Math.sin((state.travel / HOP_DISTANCE) * Math.PI),
-    );
+    const stride = HOP_DISTANCE * this.#scale;
+    const hop = Math.abs(Math.sin((state.travel / stride) * Math.PI));
 
     state.lift =
-      hop * HOP_HEIGHT * this.#creatures[index].species.trait.bounce;
+      hop
+      * HOP_HEIGHT
+      * this.#scale
+      * this.#creatures[index].species.trait.bounce;
     state.lean = state.direction * LEAN_DEGREES * (0.35 + hop * 0.65);
-  }
-
-  #bindPointer() {
-    this.listen(
-      this.root,
-      'pointermove',
-      (event) => {
-        this.#pointer.x = event.clientX;
-        this.#pointer.y = event.clientY;
-        this.#pointer.active = true;
-        this.#pointer.idle = 0;
-      },
-      { passive: true },
-    );
-
-    this.listen(this.root, 'pointerleave', () => {
-      this.#pointer.active = false;
-    });
-
-    this.listen(this.root, 'pointerdown', () => {
-      for (const creature of this.#creatures) {
-        creature.jolt(7.5);
-      }
-    });
   }
 
   /**
@@ -252,11 +245,11 @@ export default class CreaturesScene extends Scene {
     }
 
     const state = this.#state[index];
-    const unit = CreatureView.unit * SCALES[index];
-    const screenX = this.#stage.left + this.#stage.width / 2 + state.x;
-    const screenY = this.#stage.top + this.#groundY - state.lift - unit;
-    const dx = (this.#pointer.x - screenX) / unit;
-    const dy = (this.#pointer.y - screenY) / unit;
+    const unit = CreatureView.unit * SCALES[index] * this.#scale;
+    const stageX = this.viewport.width / 2 + state.x;
+    const stageY = this.#groundY - state.lift - unit;
+    const dx = (this.#pointer.x - stageX) / unit;
+    const dy = (this.#pointer.y - stageY) / unit;
 
     if (Math.hypot(dx, dy) > POINTER_REACH) {
       return null;

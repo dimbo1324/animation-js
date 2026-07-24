@@ -13,15 +13,15 @@ import { createThemeToggle } from './ThemeToggle.js';
 
 /**
  * Create the toolbar and its widgets.
- * @param {HTMLElement} tile - Tile the widgets control.
+ * @param {object} sizing - The tile's sizing controller.
  * @returns {{ element: HTMLElement, dispose: () => void }} Toolbar.
  */
-export function createToolbar(tile) {
+export function createToolbar(sizing) {
   const label = createSceneLabel();
   const widgets = [
     createSceneToggle(),
     createThemeToggle(),
-    createSizeMenu(tile),
+    createSizeMenu(sizing),
   ];
   const actions = element(
     'div',

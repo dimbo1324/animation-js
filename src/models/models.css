@@ -1,0 +1,16 @@
+/*
+ * Model stylesheets.
+ *
+ * One line per registered model. `_template/model.css` is deliberately
+ * absent: the template is a starting point, not a running model.
+ */
+
+@import url('./creatures/model.css');
+
+/* Shared frame every model is mounted into. */
+
+.model {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}

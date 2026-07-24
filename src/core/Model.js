@@ -137,7 +137,9 @@ export class Model extends Mountable {
   /**
    * Pointer moved over the stage.
    * @param {{ x: number, y: number }} _point - Position in stage pixels,
-   *   the same space as `viewport.width` and `viewport.height`.
+   *   the same space as `viewport.width` and `viewport.height`. The object
+   *   is reused between events so that moving a pointer allocates nothing:
+   *   copy the numbers out, never keep the reference.
    */
   onPointerMove(_point) {}
 

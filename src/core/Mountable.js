@@ -146,7 +146,9 @@ export class Mountable {
 
     if (this.#source !== null) {
       this.addDisposer(
-        this.#source.subscribe((viewport) => this.#applyViewport(viewport)),
+        this.#source.subscribe((viewport) =>
+          this.#applyViewport(viewport),
+        ),
       );
     }
   }

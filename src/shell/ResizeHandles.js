@@ -9,11 +9,14 @@
  * Moves write to shell state rather than to the element. The state effect
  * then applies the size once per frame, so a fast drag produces one style
  * write per frame instead of one per event.
+ *
+ * While a scene is running the handles are inert. CSS takes them out of
+ * the page and the guard below refuses a drag that was already in flight
+ * when the animation started.
  */
 
 import { element } from '../core/index.js';
-import { clampSize, measureBounds } from './geometry.js';
-import { setSize, shellState } from './state.js';
+import { sizeLocked } from './state.js';
 
 const HANDLES = [
   {
@@ -81,9 +84,10 @@ const HANDLES = [
  * same amount: the delta counts double.
  *
  * @param {HTMLElement} tile - Tile being resized.
+ * @param {object} sizing - The tile's sizing controller.
  * @returns {{ elements: HTMLElement[], dispose: () => void }} Handles.
  */
-export function createResizeHandles(tile) {
+export function createResizeHandles(tile, sizing) {
   const disposers = [];
   const elements = HANDLES.map((config) => {
     const handle = element(
@@ -94,7 +98,7 @@ export function createResizeHandles(tile) {
     handle.dataset.axis = config.axis;
     handle.style.cursor = config.cursor;
 
-    disposers.push(attachDrag(handle, tile, config));
+    disposers.push(attachDrag(handle, tile, sizing, config));
 
     return handle;
   });
@@ -110,19 +114,25 @@ export function createResizeHandles(tile) {
   };
 }
 
-function attachDrag(handle, tile, config) {
+function attachDrag(handle, tile, sizing, config) {
   let session = null;
 
   function onPointerDown(event) {
+    if (sizeLocked.value) {
+      return;
+    }
+
     event.preventDefault();
+    sizing.refresh();
+
+    const start = sizing.current();
 
     session = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
-      startWidth: shellState.width,
-      startHeight: shellState.height,
-      bounds: measureBounds(tile),
+      startWidth: start.width,
+      startHeight: start.height,
     };
 
     handle.setPointerCapture(event.pointerId);
@@ -138,16 +148,11 @@ function attachDrag(handle, tile, config) {
     const deltaX = (event.clientX - session.startX) * 2 * config.x;
     const deltaY = (event.clientY - session.startY) * 2 * config.y;
 
-    setSize(
-      clampSize(
-        session.bounds,
-        config.x === 0
-          ? session.startWidth
-          : session.startWidth + deltaX,
-        config.y === 0
-          ? session.startHeight
-          : session.startHeight + deltaY,
-      ),
+    sizing.resize(
+      config.x === 0 ? session.startWidth : session.startWidth + deltaX,
+      config.y === 0
+        ? session.startHeight
+        : session.startHeight + deltaY,
     );
   }
 

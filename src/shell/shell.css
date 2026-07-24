@@ -247,6 +247,16 @@
   border-color: var(--accent);
 }
 
+.tile__dropdown-trigger:disabled {
+  cursor: not-allowed;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.tile__dropdown-trigger:disabled:hover {
+  border-color: var(--border);
+}
+
 .tile__dropdown-label {
   white-space: nowrap;
 }
@@ -459,4 +469,14 @@
 .tile__handle--bottom-right {
   right: var(--handle-inset);
   bottom: var(--handle-inset);
+}
+
+/*
+ * Locked: a scene is running, so the size is settled. The handles leave
+ * the page entirely rather than sitting there inert — a control that looks
+ * draggable and refuses to drag is worse than one that is not offered.
+ */
+
+.tile--locked .tile__handle {
+  display: none;
 }

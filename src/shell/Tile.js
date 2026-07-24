@@ -12,14 +12,9 @@
 import { effect, element, write } from '../core/index.js';
 import { SPARKLES_ICON } from '../utils/icons.js';
 import { createResizeHandles } from './ResizeHandles.js';
+import { createSizing } from './sizing.js';
 import { createToolbar } from './Toolbar.js';
-import {
-  INITIAL_SIZE_RATIO,
-  clampSize,
-  measureBounds,
-  sizeForRatio,
-} from './geometry.js';
-import { setSize, shellState } from './state.js';
+import { shellState, sizeLocked } from './state.js';
 
 /**
  * Create the tile.
@@ -38,20 +33,25 @@ export function createTile() {
   const tile = element('div', 'tile');
   const stage = element('div', 'tile__stage');
   const body = element('div', 'tile__body', stage, createEmptyState());
-  const toolbar = createToolbar(tile);
-  const handles = createResizeHandles(tile);
+  const sizing = createSizing(tile, body);
+  const toolbar = createToolbar(sizing);
+  const handles = createResizeHandles(tile, sizing);
 
   tile.append(toolbar.element, body, ...handles.elements);
 
   const disposers = [
     toolbar.dispose,
     handles.dispose,
+    sizing.dispose,
     // Written synchronously, not through `write()`. The theme attribute is
     // what resolves every colour token on the page, so deferring it to the
     // next frame would paint everything unstyled first. An attribute write
     // reads nothing, so there is no layout thrash to batch away.
     effect(() => {
       document.documentElement.dataset.theme = shellState.theme;
+    }),
+    effect(() => {
+      tile.classList.toggle('tile--locked', sizeLocked.value);
     }),
     effect(() => {
       const { width, height } = shellState;
@@ -67,24 +67,15 @@ export function createTile() {
     }),
   ];
 
-  function onWindowResize() {
-    const bounds = measureBounds(tile);
-
-    setSize(clampSize(bounds, shellState.width, shellState.height));
-  }
-
   return {
     element: tile,
     stage,
 
     activate() {
-      setSize(sizeForRatio(measureBounds(tile), INITIAL_SIZE_RATIO));
-      window.addEventListener('resize', onWindowResize);
+      sizing.activate();
     },
 
     dispose() {
-      window.removeEventListener('resize', onWindowResize);
-
       for (const dispose of disposers) {
         dispose();
       }

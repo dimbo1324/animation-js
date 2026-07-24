@@ -8,7 +8,13 @@
 
 import { createTile } from './Tile.js';
 
-export { shellState, toggleScene, toggleTheme } from './state.js';
+export {
+  setStageMin,
+  shellState,
+  sizeLocked,
+  toggleScene,
+  toggleTheme,
+} from './state.js';
 
 /**
  * Build the application shell.

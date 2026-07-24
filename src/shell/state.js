@@ -7,7 +7,7 @@
  * project's reactivity doctrine applied to the frame around the animation.
  */
 
-import { reactive } from '../core/index.js';
+import { computed, reactive } from '../core/index.js';
 
 export const THEMES = ['light', 'dark'];
 
@@ -17,18 +17,34 @@ export const shellState = reactive({
   theme: 'dark',
   width: 0,
   height: 0,
-  /** Whether the demo scene is mounted. The stage starts empty. */
+  /** Whether a scene is mounted. The stage starts empty. */
   sceneVisible: false,
   /** Title of the mounted scene, or `null`. Owned by `main.js`. */
   sceneTitle: null,
+  /**
+   * Stage the running animation needs, in pixels. Written by `main.js`
+   * from the model's data sheet — the shell never learns which model that
+   * is, only how much room it asked for.
+   */
+  stageMin: { width: 0, height: 0 },
 });
+
+/**
+ * Whether the tile may be resized.
+ *
+ * Resizing while figures are moving means rebuilding their geometry
+ * mid-stride: paths recorded against the old stage stop being true, and
+ * the motion visibly resets. So the size is settled first and the
+ * animation adapts to it — not the other way round.
+ */
+export const sizeLocked = computed(() => shellState.sceneVisible);
 
 /** Swap between the light and dark themes. */
 export function toggleTheme() {
   shellState.theme = shellState.theme === 'dark' ? 'light' : 'dark';
 }
 
-/** Show or hide the demo scene. `main.js` reacts by mounting it. */
+/** Show or hide the scene. `main.js` reacts by mounting it. */
 export function toggleScene() {
   shellState.sceneVisible = !shellState.sceneVisible;
 }
@@ -40,4 +56,12 @@ export function toggleScene() {
 export function setSize({ width, height }) {
   shellState.width = width;
   shellState.height = height;
+}
+
+/**
+ * Declare how much stage the next animation needs.
+ * @param {{ width: number, height: number }} size - Stage size in pixels.
+ */
+export function setStageMin({ width, height }) {
+  shellState.stageMin = { width, height };
 }

@@ -1,0 +1,29 @@
+/*
+ * Template model styles. Copy this file with the folder.
+ *
+ * The root selector is `.model--<id>` — that is the class `ModelHost` puts
+ * on the element it hands over. Everything the model builds itself uses its
+ * own `model-<id>__*` block.
+ *
+ * This file is deliberately not imported by `models.css`. Add the import
+ * when the copy becomes a real model.
+ */
+
+.model--template {
+  background-color: var(--sky-bottom);
+}
+
+.model-template__figure {
+  will-change: transform;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-md);
+
+  background-color: var(--accent);
+}

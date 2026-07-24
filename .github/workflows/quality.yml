@@ -62,14 +62,18 @@ jobs:
             exit 1
           fi
 
-      - name: Shell and scenes stay independent
+      - name: Shell, scenes, and models stay independent
         run: |
-          if grep -rn "from '\.\./\.\./shell" src/scenes; then
-            echo "::error::src/scenes must not import from src/shell"
+          if grep -rn "from '\.\./\.\./shell" src/scenes src/models; then
+            echo "::error::src/scenes and src/models must not import from src/shell"
             exit 1
           fi
-          if grep -rn "from '\.\./scenes" src/shell; then
-            echo "::error::src/shell must not import from src/scenes"
+          if grep -rn "from '\.\./scenes\|from '\.\./models" src/shell; then
+            echo "::error::src/shell must not import from src/scenes or src/models"
+            exit 1
+          fi
+          if grep -rn "from '\.\./\.\./scenes" src/models; then
+            echo "::error::src/models must not import from src/scenes"
             exit 1
           fi
 
