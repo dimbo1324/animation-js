@@ -4,6 +4,9 @@
  * The tile knows nothing about what runs inside it. It exposes a `stage`
  * element and hands that over to the scene host; everything past that
  * boundary is the scene's business.
+ *
+ * Layout is a header strip plus a body: the toolbar is its own surface, so
+ * nothing floats over the artwork.
  */
 
 import { effect, element, write } from '../core/index.js';
@@ -34,25 +37,21 @@ import { setSize, shellState } from './state.js';
 export function createTile() {
   const tile = element('div', 'tile');
   const stage = element('div', 'tile__stage');
+  const body = element('div', 'tile__body', stage, createEmptyState());
   const toolbar = createToolbar(tile);
   const handles = createResizeHandles(tile);
 
-  tile.append(
-    toolbar.element,
-    stage,
-    createEmptyState(),
-    ...handles.elements,
-  );
+  tile.append(toolbar.element, body, ...handles.elements);
 
   const disposers = [
     toolbar.dispose,
     handles.dispose,
     // Written synchronously, not through `write()`. The theme attribute is
-    // what resolves every colour token on the tile, so deferring it to the
-    // next frame would paint the card unstyled first. An attribute write
+    // what resolves every colour token on the page, so deferring it to the
+    // next frame would paint everything unstyled first. An attribute write
     // reads nothing, so there is no layout thrash to batch away.
     effect(() => {
-      tile.dataset.theme = shellState.theme;
+      document.documentElement.dataset.theme = shellState.theme;
     }),
     effect(() => {
       const { width, height } = shellState;
@@ -94,15 +93,17 @@ export function createTile() {
 }
 
 function createEmptyState() {
-  const empty = element('div', 'tile__empty');
   const icon = element('span', 'tile__empty-icon');
 
   icon.innerHTML = SPARKLES_ICON;
 
-  const text = element('p', 'tile__empty-text');
+  const title = element('p', 'tile__empty-title');
 
-  text.textContent = 'Здесь появится анимация';
-  empty.append(icon, text);
+  title.textContent = 'Сцена пуста';
 
-  return empty;
+  const hint = element('p', 'tile__empty-hint');
+
+  hint.textContent = 'Позовите существ кнопкой в панели сверху';
+
+  return element('div', 'tile__empty', icon, title, hint);
 }

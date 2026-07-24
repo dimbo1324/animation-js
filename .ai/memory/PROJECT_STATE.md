@@ -48,20 +48,45 @@ core     →  utils
 
 ### Scenes
 
-- `src/scenes/walker/` — reference scene. A character pacing back and
-  forth with squash-and-stretch, head lag, opposed limb swing, blinking,
-  and a click/Enter pause. Demonstrates every project rule in one file.
+- `src/scenes/creatures/` — the reference scene. Three soft-bodied
+  characters running single file. Procedural throughout: a rounded polygon
+  is sampled into 56 points, deformed every frame by breathing, weight and
+  noise, then smoothed back into an SVG path. Springs drive every facial
+  value; eyes track the pointer, blink, and go cross-eyed. Split into
+  `Creature.js` (simulation), `CreatureView.js` (SVG writes), `Trail.js`
+  (the leader's path history), `geometry.js`, `species.js`, `moods.js`.
 - `src/scenes/_template/` — copy-me starting point. Deliberately not
   registered and not imported by `scenes.css`.
+
+**The scene root class is `.scene--<id>`** — that is what `SceneHost` puts
+on the element. Scene CSS must target that, not `.scene-<id>`. Anything the
+scene builds itself uses its own `scene-<id>__*` block.
 
 Registration points when adding a scene: `src/scenes/index.js` (lazy
 loader) and `src/scenes/scenes.css` (one `@import`). Nothing else.
 
+Nothing is mounted on load. `shellState.sceneVisible` is the flag; the
+toolbar flips it and `main.js` reacts by mounting `DEMO_SCENE_ID`. That is
+how the shell stays ignorant of `src/scenes/`.
+
 ### Shell
 
-The tile is reactive: `src/shell/state.js` holds `theme`, `width`, and
-`height`; widgets mutate that state and effects project it onto the DOM.
-Bounds are measured once per interaction, never per pointer move.
+The tile is reactive: `src/shell/state.js` holds `theme`, `width`,
+`height`, `sceneVisible`, and `sceneTitle`; widgets mutate that state and
+effects project it onto the DOM. Bounds are measured once per interaction,
+never per pointer move.
+
+The toolbar is a real header strip across the top of the tile — its own
+surface, with the scene label on the left and the controls on the right —
+so nothing floats over the artwork. The tile is deliberately not
+`overflow: hidden`, or the size dropdown could not escape the card.
+
+**Dark is the default theme.** `data-theme` lives on `<html>`, pre-set in
+`public/index.html` so the first paint is already correct, and owned by the
+shell from then on. All palettes are `:root[data-theme=…]` in `tokens.css`.
+
+Icons are Lucide only, inlined in `src/utils/icons.js` with reference
+copies in `src/assets/icons/`. No Unicode symbols anywhere in the UI.
 
 ## Tooling
 
@@ -82,7 +107,8 @@ Bounds are measured once per interaction, never per pointer move.
 ## Not built yet
 
 - No scene picker in the UI. `registry.listScenes()` exists and is unused;
-  `main.js` mounts `DEFAULT_SCENE_ID` directly.
+  the toolbar toggle mounts `DEMO_SCENE_ID` and nothing else. A picker is
+  the natural next step once there is a second scene.
 - No tests and no test runner. Opt-in by owner request only.
 - No build step and no `dist/`. Not needed; do not add one unasked.
 - No Canvas or WebGL tier. The DOM tier has not been outgrown.

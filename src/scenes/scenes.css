@@ -5,7 +5,7 @@
  * absent: the template is a starting point, not a running scene.
  */
 
-@import url('./walker/scene.css');
+@import url('./creatures/scene.css');
 
 /* Shared frame every scene is mounted into. */
 

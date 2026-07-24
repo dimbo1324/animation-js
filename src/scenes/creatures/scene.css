@@ -1,0 +1,54 @@
+/*
+ * Creatures scene.
+ *
+ * Static appearance only. Every moving value is written by `onRender` as an
+ * SVG attribute or a transform — nothing here animates on its own, and
+ * nothing here forces layout.
+ */
+
+/*
+ * The root selector is `.scene--<id>`: that is the class `SceneHost` puts
+ * on the element it hands over. Everything the scene builds itself uses its
+ * own `scene-creatures__*` block.
+ */
+
+.scene--creatures {
+  cursor: crosshair;
+  background: radial-gradient(
+    120% 80% at 50% 12%,
+    var(--sky-top) 0%,
+    var(--sky-bottom) 68%
+  );
+}
+
+.scene--creatures::after {
+  content: '';
+
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  height: 20%;
+
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--ground) 42%
+  );
+}
+
+.scene-creatures__stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.scene-creatures__shadows ellipse {
+  fill: var(--shadow-cast);
+}
+
+.creature {
+  will-change: transform;
+}

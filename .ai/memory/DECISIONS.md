@@ -114,3 +114,66 @@ be reproducible across machines.
 
 **Consequence.** Removed from `.gitignore`. `.vscode/` is tracked for the
 same reason: shared formatter and linter settings.
+
+---
+
+## D-009 — 2026-07-24 — The stage starts empty; a toolbar button summons the demo
+
+**Why.** Owner instruction. A demo character that is always on screen gets
+in the way of whatever is actually being built.
+
+**Consequence.** `main.js` mounts nothing on load. `shellState.sceneVisible`
+is the flag; the toolbar toggle flips it and an effect in `main.js` mounts
+or unmounts `DEMO_SCENE_ID`. The shell still knows no scene ids — that is
+what keeps the shell/scene seam intact.
+
+---
+
+## D-010 — 2026-07-24 — Dark is the default theme, and `data-theme` lives on `<html>`
+
+**Why.** Owner instruction. Scoping the palette to the tile also left the
+page around it following the OS preference, so a light OS gave a light page
+around a dark card.
+
+**Consequence.** All palettes are `:root[data-theme=…]` in `tokens.css`.
+`public/index.html` ships `data-theme="dark"` so the first paint is already
+correct; the shell owns the attribute from then on. `prefers-color-scheme`
+no longer drives anything.
+
+---
+
+## D-011 — 2026-07-24 — The scene root class is `.scene--<id>`
+
+**Why.** `SceneHost` creates `class="scene scene--<id>"`, but the first two
+scenes styled `.scene-<id>`, so their backdrops silently never applied. The
+bug is invisible — the scene still animates, it just has no background.
+
+**Consequence.** Scene CSS targets `.scene--<id>` for the root and
+`scene-<id>__*` for anything the scene builds itself. Stated in
+`_template/scene.css` and in `PROJECT_STATE.md`.
+
+---
+
+## D-012 — 2026-07-24 — Followers replay the leader's path instead of chasing it
+
+**Why.** Steering behaviours (seek, arrive, separation) drift out of line
+and need tuning per speed. Replaying a recorded path is exact, has no
+parameters, and reproduces turnarounds perfectly.
+
+**Consequence.** `src/scenes/creatures/Trail.js` is a fixed-capacity ring
+of `(time, x, direction)` in typed arrays. Follower `i` samples the trail at
+`now - i * FOLLOW_DELAY` and interpolates. Zero allocation per frame, and
+the chain holds its shape through every reversal.
+
+---
+
+## D-013 — 2026-07-24 — `Spring` and `createNoise` are engine primitives, not scene code
+
+**Why.** Both came from the creatures concept, but neither is specific to
+it: any character with weight wants a spring, any organic surface wants
+noise.
+
+**Consequence.** They live in `src/utils/Spring.js` and `src/utils/noise.js`
+with `smoothstep`/`softCap` added to `src/utils/math.js`. `Spring` uses
+plain public fields rather than accessors on purpose — it runs for every
+animated property of every entity, every frame.

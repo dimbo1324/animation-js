@@ -20,6 +20,7 @@ export {
   measureThenMutate,
   prefersReducedMotion,
   read,
+  svgElement,
   transform,
   write,
 } from './dom.js';

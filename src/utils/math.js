@@ -90,3 +90,40 @@ export function wrap(value, min, max) {
 export function randomBetween(min, max) {
   return min + Math.random() * (max - min);
 }
+
+/**
+ * Pick a random element.
+ * @template T
+ * @param {T[]} items - Non-empty array.
+ * @returns {T} One element.
+ */
+export function pickRandom(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+/**
+ * Smooth 0-to-1 step across an interval, with zero slope at both ends.
+ * @param {number} edge0 - Start of the transition.
+ * @param {number} edge1 - End of the transition.
+ * @param {number} value - Input value.
+ * @returns {number} Eased 0-1.
+ */
+export function smoothstep(edge0, edge1, value) {
+  const t = clamp((value - edge0) / (edge1 - edge0), 0, 1);
+
+  return t * t * (3 - 2 * t);
+}
+
+/**
+ * Asymptotic ceiling: grows like the input near zero, never passes `limit`.
+ *
+ * Used to make a soft body settle onto a surface instead of clipping
+ * through it.
+ *
+ * @param {number} value - Non-negative input.
+ * @param {number} limit - Value the result approaches but never reaches.
+ * @returns {number} Softly capped value.
+ */
+export function softCap(value, limit) {
+  return limit * (1 - Math.exp(-value / limit));
+}

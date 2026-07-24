@@ -1,6 +1,12 @@
-/* Scene template styles. Everything is scoped under the scene root class. */
+/*
+ * Scene template styles.
+ *
+ * The root selector is `.scene--<id>`: that is the class `SceneHost` puts
+ * on the element it hands the scene. Anything the scene builds itself gets
+ * its own `scene-<id>__*` block. Nothing here may leak outside the root.
+ */
 
-.scene-template {
+.scene--template {
   position: relative;
   width: 100%;
   height: 100%;

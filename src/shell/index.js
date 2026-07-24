@@ -8,7 +8,7 @@
 
 import { createTile } from './Tile.js';
 
-export { shellState } from './state.js';
+export { shellState, toggleScene, toggleTheme } from './state.js';
 
 /**
  * Build the application shell.

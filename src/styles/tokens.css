@@ -31,58 +31,54 @@
   --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
   --handle-thickness: 0.75rem;
   --handle-inset: -0.375rem;
-  --page-bg: #f4f5f7;
-  --page-fg: #16181d;
-  color-scheme: light dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --page-bg: #101216;
-    --page-fg: #e7e9ee;
-  }
+  --toolbar-height: 2.875rem;
+  color-scheme: dark;
 }
 
 /*
- * Tile-scoped palettes. The tile carries `data-theme`, so a scene mounted
- * inside it inherits the matching colours without knowing the theme
- * exists.
+ * Palettes.
+ *
+ * `data-theme` lives on the root element, set by the shell and pre-set in
+ * `public/index.html`, so the very first paint is already themed. Dark is
+ * the default; everything downstream — tile, toolbar, scenes — reads these
+ * variables and never needs to know which theme is active.
  */
 
-.tile[data-theme='light'] {
-  --surface: #ffffff;
-  --surface-muted: #f1f2f5;
-  --border: #dcdfe6;
-  --text: #1c1f26;
-  --text-muted: #6b7280;
-  --accent: #4c6ef5;
-  --accent-soft: #e7ecfd;
-  --sky-top: #eef3ff;
-  --sky-bottom: #ffffff;
-  --ground: #dfe4ee;
-  --character-body: #4c6ef5;
-  --character-limb: #3b5bdb;
-  --character-face: #ffffff;
-  --character-ink: #1c1f26;
-  --shadow-cast: #1c1f26;
-  --shadow-tile: 0 1.25rem 3rem rgb(28 31 38 / 12%);
-}
-
-.tile[data-theme='dark'] {
+:root[data-theme='dark'] {
+  --page-bg: #0d0f13;
+  --page-fg: #e7e9ee;
   --surface: #1a1d24;
   --surface-muted: #23272f;
+  --surface-raised: #212630;
   --border: #333944;
+  --border-strong: #414958;
   --text: #e7e9ee;
   --text-muted: #9aa1ad;
   --accent: #8ba4ff;
   --accent-soft: #262c3d;
-  --sky-top: #1f2430;
-  --sky-bottom: #171a21;
-  --ground: #2a2f3a;
-  --character-body: #8ba4ff;
-  --character-limb: #6b86e8;
-  --character-face: #f5f7ff;
-  --character-ink: #10121a;
+  --sky-top: #232a38;
+  --sky-bottom: #161a22;
+  --ground: #2c3340;
   --shadow-cast: #000000;
   --shadow-tile: 0 1.25rem 3rem rgb(0 0 0 / 45%);
+}
+
+:root[data-theme='light'] {
+  --page-bg: #f4f5f7;
+  --page-fg: #16181d;
+  --surface: #ffffff;
+  --surface-muted: #f1f2f5;
+  --surface-raised: #f7f8fa;
+  --border: #dcdfe6;
+  --border-strong: #c6cbd6;
+  --text: #1c1f26;
+  --text-muted: #6b7280;
+  --accent: #4c6ef5;
+  --accent-soft: #e7ecfd;
+  --sky-top: #e9eefc;
+  --sky-bottom: #ffffff;
+  --ground: #d9dfec;
+  --shadow-cast: #1c1f26;
+  --shadow-tile: 0 1.25rem 3rem rgb(28 31 38 / 12%);
+  color-scheme: light;
 }

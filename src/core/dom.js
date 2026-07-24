@@ -100,6 +100,34 @@ export function element(tag, className, ...children) {
 }
 
 /**
+ * Create an SVG element with attributes, in one call.
+ *
+ * SVG needs `createElementNS`; `document.createElement('circle')` silently
+ * produces an unknown HTML element that never renders.
+ *
+ * @param {string} tag - SVG tag name.
+ * @param {Record<string, string | number>} [attributes] - Attributes to set.
+ * @param {...Node} children - Nodes to append.
+ * @returns {SVGElement} The created element.
+ */
+export function svgElement(tag, attributes = {}, ...children) {
+  const node = document.createElementNS(
+    'http://www.w3.org/2000/svg',
+    tag,
+  );
+
+  for (const [name, value] of Object.entries(attributes)) {
+    node.setAttribute(name, String(value));
+  }
+
+  if (children.length > 0) {
+    node.append(...children);
+  }
+
+  return node;
+}
+
+/**
  * Report whether the user has asked for reduced motion.
  *
  * Every scene must have a sane path for `true`: a static pose, or motion
