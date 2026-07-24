@@ -39,9 +39,17 @@ asset reference, ever.
 
 ## The layering contract
 
-`shell` must not import from `scenes`; `scenes` must not import from
-`shell`; `core` imports from neither. Adding an animation must not require
-editing shell code.
+`shell` must not import from `scenes` or `models`; neither of those may
+import from `shell`; `models` must not import from `scenes`; `core`
+imports from none of them. Adding an animation must not require editing
+shell code, and adding a figure must not require editing a scene.
+
+## The size lock
+
+The tile is resizable only while nothing is animating. Owner instruction:
+resizing mid-animation rebuilds geometry under moving figures. Do not add
+a control that resizes the tile without checking `sizeLocked`, and do not
+weaken the lock to make something convenient.
 
 ## Runtime dependencies
 

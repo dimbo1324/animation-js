@@ -177,3 +177,97 @@ noise.
 with `smoothstep`/`softCap` added to `src/utils/math.js`. `Spring` uses
 plain public fields rather than accessors on purpose — it runs for every
 animated property of every entity, every frame.
+
+---
+
+## D-014 — 2026-07-24 — The model is the unit of authorship; the scene is a reusable surface
+
+**Why.** Owner instruction. A figure and its behaviour should be written in
+one folder, found in one place, and handed upward as a class the rest of
+the application can drive without knowing what it is. Putting the
+choreography in the scene meant a new figure needed a new scene.
+
+**Consequence.** `src/models/<id>/` owns a figure end to end — geometry,
+simulation, SVG or DOM nodes, and `model.css`. `src/core/Model.js` is the
+contract, `src/core/ModelHost.js` mounts one, and `src/scenes/showcase/`
+is the single generic scene every model runs in. `src/scenes/creatures/`
+moved to `src/models/creatures/` in this task; the old scene id
+`creatures` no longer exists. Layer direction gains one edge:
+`main.js -> models`, `scenes -> models`, `models -> core, utils`. Models
+must not import `shell` or `scenes`; CI greps for it. Supersedes nothing,
+but narrows D-004: the shell/scene seam is unchanged, and a second seam
+now sits between scene and model.
+
+---
+
+## D-015 — 2026-07-24 — A model's metadata lives in a statically-imported manifest
+
+**Why.** The shell has to size the tile around a figure _before_ the
+figure's code has been downloaded, and lazy loading is worth keeping. A
+`static naturalSize` on the class is unreachable at that moment.
+
+**Consequence.** Each model folder holds `manifest.js` — id, title,
+`naturalSize`, `fitRange`, optional `minStage`, and the dynamic import.
+`src/models/index.js` imports the manifests statically and registers them;
+the class imports its own manifest back for its statics, so the numbers
+have exactly one home. `createLazyRegistry` verifies at load time that the
+class's `static id` matches the manifest and throws when they disagree.
+
+---
+
+## D-016 — 2026-07-24 — Sizes travel on an explicit Observable, not through the reactive proxy
+
+**Why.** Reactive state batches to the next frame and tracks dependencies
+automatically, which is right for configuration a human toggles. A
+measurement is different: it is produced once, by one owner, and several
+consumers need it in the frame it was taken. Batching it delays every
+consumer; proxying it makes a measurement look like configuration.
+
+**Consequence.** `src/core/Observable.js` — one publisher, many
+subscribers, synchronous delivery, deduplicated by value, immediate
+delivery to late subscribers. `SceneHost` owns the only `ResizeObserver` on
+the stage, measures through `measureThenMutate`, and publishes on
+`host.viewport`; `Scene` and every `Model` subscribe through `Mountable`
+and release on destroy. Nothing else calls `getBoundingClientRect()` on the
+stage — the creatures model used to, and no longer does. This does not
+weaken D-003: `reactive` remains the default for structure and
+configuration.
+
+---
+
+## D-017 — 2026-07-24 — The tile is locked while a scene runs; its minimum adapts to the model
+
+**Why.** Owner instruction. Resizing mid-animation rebuilds geometry under
+moving figures — recorded paths stop being true and the motion visibly
+resets. So the size is settled first and the animation adapts to it.
+
+**Consequence.** `sizeLocked` is a `computed` over `shellState.sceneVisible`.
+While it is true the drag handles are removed from the page by
+`.tile--locked` and the size dropdown is `disabled`; `src/shell/sizing.js`
+also refuses programmatically, so a drag already in flight cannot continue.
+A shrinking _page_ still re-clamps the tile — the lock is about the user
+resizing, not about the tile outgrowing its window. The maximum is
+unchanged at 0.95 of the available bounds. The minimum is now
+`max(model stage, floor) + measured chrome`, capped by the maximum, where
+the model's stage comes from `minStageFor(descriptor)` and reaches the
+shell through `shellState.stageMin`, written by `main.js`. Figures adapt in
+the other direction through `Model.renderScale`.
+
+---
+
+## D-018 — 2026-07-24 — The tile's first measurement waits for a ResizeObserver
+
+**Why.** Measuring synchronously right after appending the tile reads the
+page before its stylesheets have settled. In this task that produced a
+`body.offsetWidth` of 0, a "chrome" measurement the size of the whole tile,
+a minimum computed above the maximum, and a tile permanently pinned to its
+largest size. The bug is silent: nothing throws, the tile just refuses to
+resize.
+
+**Consequence.** `src/shell/sizing.js` watches the tile's parent with a
+`ResizeObserver` instead of a `window` resize listener, and takes the
+starting size in that observer's first callback — which fires after layout.
+`measureChrome` returns zero when the body has no box yet, because a
+measurement taken too early is absent, not enormous. Any future code that
+derives a limit from a measurement must ask the same question: what does
+this read return before layout?

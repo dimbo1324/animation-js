@@ -63,6 +63,24 @@ to avoid.
 In one line: **reactive state drives structure and configuration; the
 ticker drives motion.** Mixing them up costs frames.
 
+## Measurements are not configuration
+
+A size is produced once, by one owner, and several unrelated consumers
+need it in the same frame it was taken. Batching it to the next frame
+delays every consumer; tracking it through a proxy makes a measurement
+look like something a human toggled.
+
+So measurements travel on `src/core/Observable.js` instead: one publisher,
+many subscribers, synchronous delivery, deduplicated by value, with the
+current value delivered immediately to anyone who subscribes late.
+`SceneHost` owns the only `ResizeObserver` on the stage and publishes the
+viewport on `host.viewport`; `Scene` and `Model` subscribe through
+`Mountable` and release on destroy.
+
+Nothing else may call `getBoundingClientRect()` on the stage. If code
+needs the stage's size or page offset, it takes the numbers that were
+already measured.
+
 ## Rendering discipline that follows
 
 - No effect writes to the DOM outside `onRender` or a `write()` batch.
