@@ -1,114 +1,70 @@
-# Task: bootstrap the AI-assistant system and the project architecture
+# Task: model layer, generic scene, and an adaptive locked tile
 
-Owner request, 2026-07-23. Working directly on `main` by explicit owner
-instruction. Push to remote `main` authorised for this task only.
+Owner request, 2026-07-24. Branch `feat/model-layer-and-adaptive-tile`.
 
 Legend: `+` done, `-` not done or partial.
 
 ## Preparation
 
-- [+] Study `country-decision-atlas-r` (`.ai/`, `.claude/`, `.codex/`,
-  `CLAUDE.md`, `AGENTS.md`) as the reference setup
-- [+] Read the existing `animation-js` source and tooling
-- [+] Read `docs/PERFORMANCE.md` before deleting it
-- [+] Leave `docs/__arch__/` untouched
+- [ ] Orientation ritual: git status/log, `PROJECT_STATE.md`,
+      `DECISIONS.md`, newest session files, previous checklist
+- [ ] Read the engine, the shell, and the creatures scene end to end
+- [ ] Leave `docs/__arch__/` untouched
 
-## Task 1 — AI assistant configuration
+## Task 1 — engine: the model contract
 
-- [+] `.ai/universal/` — 7 portable rule modules, English only
-- [+] `.ai/project/` — 7 project modules, English only
-- [+] Performance doctrine translated from `docs/PERFORMANCE.md` and
-  extended
-- [+] `new Proxy()` reactivity doctrine written as a binding rule
-- [+] Frontend craft bar (JS / CSS / HTML / UI-UX / motion / optimisation)
-- [+] Guardrails: `docs/__arch__` private, `main` protected, no docs and no
-  tests without a request
-- [+] Continuity system: `.ai/memory/` with `PROJECT_STATE.md`,
-  `DECISIONS.md`, `sessions/_TEMPLATE.md`
-- [+] `scripts/ai/sync_agents.py` + cross-platform `sync.mjs` launcher
-- [+] Generated entry points: `AGENTS.md`, `GEMINI.md`,
-  `.github/copilot-instructions.md`, `.cursor/rules/animation-js.mdc`
-- [+] `CLAUDE.md` with native `@` imports
-- [+] `.claude/` — settings, launch, README, 6 agents, 4 skills
-- [+] `.codex/` — config, README, 6 agents, 4 skills (name-for-name mirror)
-- [+] `docs/PERFORMANCE.md` deleted after its content was absorbed
+- [ ] `src/core/Observable.js` — explicit subscribe/notify channel
+- [ ] `src/core/Mountable.js` — shared root/viewport/lifecycle/teardown
+- [ ] `src/core/Model.js` — the contract every figure implements
+- [ ] `src/core/ModelHost.js` — mounts one model into a container
+- [ ] `src/core/lazyRegistry.js` — generic lazy id → loader registry
+- [ ] `src/core/registry.js` rebuilt on the factory, same public API
+- [ ] `Scene` and `SceneHost` moved onto the viewport observable
+- [ ] `src/core/index.js` re-exports the new surface
 
-## Task 2 — remove the old architecture doc
+## Task 2 — the models layer
 
-- [+] `docs/ARCHITECTURE.md` deleted
+- [ ] `src/models/registry.js`, `src/models/index.js`, `models.css`
+- [ ] `src/models/_template/` — copy-me model (js + css + manifest)
+- [ ] `src/scenes/creatures/` moved to `src/models/creatures/`
+- [ ] Creatures reworked as a `Model`: fit scale, stage-local pointer
+- [ ] `src/styles/main.css` imports the models stylesheet
 
-## Task 3 — protect `main` locally
+## Task 3 — one generic scene
 
-- [+] `.githooks/reference-transaction` refuses deletion of local `main`
-- [+] `.githooks/pre-push` refuses deletion and force-push of remote `main`
-- [+] `receive.denyDeletes` / `denyNonFastForwards` set locally
-- [+] `.claude/settings.json` denies the destructive commands outright
-- [+] Hook installation wired into `npm install`
+- [ ] `src/scenes/showcase/` — hosts any model, forwards frames and input
+- [ ] `src/scenes/index.js` registers the showcase; creatures deregistered
+- [ ] `src/main.js` wires model → tile minimum → scene mount
 
-## Task 4 — stricter, vertical formatting
+## Task 4 — the tile: locked while animating, adaptive minimum
 
-- [+] Prettier: width 72, one attribute per line, trailing commas
-  everywhere, operators at line start
-- [+] ESLint: rewritten strict config, `--max-warnings=0`, project-specific
-  restrictions on layout writes, timers, and private rAF loops
-- [+] Stylelint: BEM pattern, no `!important` without justification, no id
-  selectors, specificity ceiling, canonical property order
-- [+] `.editorconfig` aligned to the 72-column rule
+- [ ] `shellState.stageMin` and the `sizeLocked` derivation
+- [ ] `src/shell/sizing.js` — one owner of measurement and clamping
+- [ ] Adaptive minimum from the model's declared stage; maximum unchanged
+- [ ] Resize handles and the size menu refuse to act while a scene runs
+- [ ] Tile grows to fit a model that needs more room
 
-## Task 5 — infrastructure
+## Task 5 — repository hygiene
 
-- [+] `.github/workflows/quality.yml` — gate + guardrail greps
-- [+] `.github/workflows/pages.yml` — live demo deploy
-- [+] `dependabot.yml`, PR template, issue templates, `CODEOWNERS`
-- [+] `.gitattributes`, `.nvmrc`, `.vscode/`
-- [+] `scripts/dev-server.mjs` — dependency-free server with live reload
-- [+] `package-lock.json` and `.vscode/` un-ignored and tracked
-
-## Task 6 — shell / scene architecture
-
-- [+] `src/core/` engine: scheduler, reactive, Ticker, dom, Scene,
-  SceneHost, registry
-- [+] `src/shell/` decomposed from the old monolithic `Tile.js`
-- [+] `src/scenes/` with `_template/` and the `walker` reference scene
-- [+] `public/index.html` reduced to exactly one CSS and one JS reference
-- [+] `src/styles/main.css` as the single import root
-- [+] Layer independence enforced in CI
-
-## Task 7 — judgement calls
-
-- [+] Design tokens introduced; raw hex values removed from components
-- [+] Resize measures bounds once per drag instead of per pointer move
-- [+] Teardown added everywhere (listeners, effects, observers, loop)
-- [+] Keyboard and ARIA support for the size menu and the scene toggle
-- [+] Dead scaffolding removed: `Button.js`, `config/build.example.js`,
-  broken `tests/unit/helpers.test.js`, stray root `.gitkeep`
-- [+] husky replaced with tracked `.githooks/`
+- [ ] Remove `.gitkeep` from directories that now track real files
+- [ ] ESLint: per-frame restrictions extended to `src/models/**`
+- [ ] CI guardrails: models must not import shell, shell must not import
+      models
 
 ## Verification
 
-- [+] `npm install` — clean, 0 vulnerabilities
-- [+] `npm run validate` — prettier, eslint, stylelint, ai:check all green
-- [+] Engine verified in Node with a fake rAF: 21 checks on reactivity
-  batching, equality guard, disposal, computed, and ticker ordering,
-  `dt` clamping, and priority
-- [+] Frame-rate independence measured: 900 px in 10 s at 60/120/144 Hz
-- [+] Git hooks proven in a throwaway sandbox repo: `main` survives
-  `branch -D` and `branch -m`; force-push and delete of `origin/main`
-  refused; fast-forward push allowed; `commit-msg` accepts and rejects
-  the right messages
-- [+] Page loads with a clean console; shell and full walker rig build;
-  tile correctly themed on first paint; one captured frame shows real
-  displacement with squash-and-stretch
-- [-] Continuous motion NOT watched by a human. The Browser pane in this
-  session was hidden, which suppresses `requestAnimationFrame`, so the
-  walk could not be observed running. Owner should run `npm run dev`.
-- [-] Resize dragging and theme toggling NOT exercised interactively, for
-  the same reason. Their logic is covered by review only.
+- [ ] `npm run validate` green
+- [ ] Page loads with a clean console
+- [ ] Motion watched: creatures run, hop, blink, track the pointer
+- [ ] Resize locked while the scene runs, free when it is not
+- [ ] Minimum size adapts to the model; maximum unchanged
+- [ ] Mount / unmount / re-mount leaves no listener or effect behind
 
 ## Completion
 
-- [+] `.ai/memory/PROJECT_STATE.md` written
-- [+] `.ai/memory/DECISIONS.md` seeded with D-001..D-008
-- [+] Session artifact written to `.ai/memory/sessions/`
-- [+] Checklist filled honestly
-- [+] Final report delivered
+- [ ] `.ai/memory/PROJECT_STATE.md` updated
+- [ ] `.ai/memory/DECISIONS.md` appended
+- [ ] Session artifact written
+- [ ] Rule modules updated and `npm run ai:sync` run
+- [ ] Checklist filled with `+`/`-`
+- [ ] Final report
