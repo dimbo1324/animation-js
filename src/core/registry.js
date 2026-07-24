@@ -2,12 +2,13 @@
  * Scene registry.
  *
  * Scenes are registered by id with a lazy loader, so the browser downloads
- * an animation only when it is actually mounted. The shell can list what
- * exists without importing any of it.
+ * a scene only when it is actually mounted. The shell can list what exists
+ * without importing any of it.
  */
 
-/** @type {Map<string, { id: string, title: string, load: Function, pending: Promise<object> | null }>} */
-const entries = new Map();
+import { createLazyRegistry } from './lazyRegistry.js';
+
+const scenes = createLazyRegistry({ kind: 'scene' });
 
 /**
  * Register one scene.
@@ -17,12 +18,8 @@ const entries = new Map();
  * @param {() => Promise<object>} descriptor.load - Dynamic import returning
  *   a module whose default export is a `Scene` subclass.
  */
-export function registerScene({ id, title, load }) {
-  if (entries.has(id)) {
-    throw new Error(`registry: scene "${id}" is already registered`);
-  }
-
-  entries.set(id, { id, title, load, pending: null });
+export function registerScene(descriptor) {
+  scenes.register(descriptor);
 }
 
 /**
@@ -30,7 +27,7 @@ export function registerScene({ id, title, load }) {
  * @returns {Array<{ id: string, title: string }>} Registered scenes.
  */
 export function listScenes() {
-  return [...entries.values()].map(({ id, title }) => ({ id, title }));
+  return scenes.list();
 }
 
 /**
@@ -39,7 +36,16 @@ export function listScenes() {
  * @returns {boolean} True if the scene exists.
  */
 export function hasScene(id) {
-  return entries.has(id);
+  return scenes.has(id);
+}
+
+/**
+ * Read a scene's metadata without loading its code.
+ * @param {string} id - Scene identifier.
+ * @returns {{ id: string, title: string }} The descriptor.
+ */
+export function getScene(id) {
+  return scenes.get(id);
 }
 
 /**
@@ -47,28 +53,6 @@ export function hasScene(id) {
  * @param {string} id - Scene identifier.
  * @returns {Promise<typeof import('./Scene.js').Scene>} Scene class.
  */
-export async function loadScene(id) {
-  const entry = entries.get(id);
-
-  if (entry === undefined) {
-    throw new Error(
-      `registry: unknown scene "${id}"; registered: `
-        + `${[...entries.keys()].join(', ') || '(none)'}`,
-    );
-  }
-
-  entry.pending ??= entry.load();
-
-  const module = await entry.pending;
-  const SceneClass = module.default;
-
-  if (typeof SceneClass !== 'function') {
-    entry.pending = null;
-
-    throw new Error(
-      `registry: scene "${id}" must default-export a Scene subclass`,
-    );
-  }
-
-  return SceneClass;
+export function loadScene(id) {
+  return scenes.load(id);
 }

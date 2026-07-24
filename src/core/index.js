@@ -1,12 +1,16 @@
 /**
  * Public surface of the animation engine.
  *
- * Shell code and scene code import from here, never from the individual
- * modules, so that internal reorganisation stays internal.
+ * Shell code, scene code, and model code import from here, never from the
+ * individual modules, so that internal reorganisation stays internal.
  */
 
+export { Mountable } from './Mountable.js';
 export { Scene } from './Scene.js';
 export { SceneHost } from './SceneHost.js';
+export { Model, minStageFor } from './Model.js';
+export { ModelHost } from './ModelHost.js';
+export { Observable, sameViewport } from './Observable.js';
 export { Ticker, ticker } from './Ticker.js';
 export {
   computed,
@@ -25,7 +29,9 @@ export {
   write,
 } from './dom.js';
 export { clearQueues, flushScheduler, schedule } from './scheduler.js';
+export { createLazyRegistry } from './lazyRegistry.js';
 export {
+  getScene,
   hasScene,
   listScenes,
   loadScene,
